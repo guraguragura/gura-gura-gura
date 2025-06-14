@@ -77,7 +77,8 @@ export const useOrderFetching = () => {
       
       if (!orders || orders.length === 0) {
         console.log('No real orders found, using mock data for available orders');
-        setAvailableOrders(mockDataManager.getAvailableOrders());
+        const mockOrders = await mockDataManager.getAvailableOrders();
+        setAvailableOrders(mockOrders);
         setUseMockData(true);
       } else {
         const formattedOrders: DriverOrder[] = orders.map(formatOrder);
@@ -87,12 +88,13 @@ export const useOrderFetching = () => {
     } catch (error) {
       console.error('Error fetching available orders:', error);
       console.log('Falling back to mock data for available orders');
-      setAvailableOrders(mockDataManager.getAvailableOrders());
+      const mockOrders = await mockDataManager.getAvailableOrders();
+      setAvailableOrders(mockOrders);
       setUseMockData(true);
       
       toast({
         title: "Using Demo Data",
-        description: "Showing demo orders for demonstration purposes",
+        description: "Showing demo orders with real-time route calculations",
       });
     }
   }, [toast]);
@@ -134,7 +136,8 @@ export const useOrderFetching = () => {
       
       if (!orders || orders.length === 0) {
         console.log('No real active orders found, using mock data');
-        setActiveOrders(mockDataManager.getActiveOrders());
+        const mockOrders = await mockDataManager.getActiveOrders();
+        setActiveOrders(mockOrders);
       } else {
         const formattedOrders: DriverOrder[] = orders.map(formatOrder);
         setActiveOrders(formattedOrders);
@@ -142,7 +145,8 @@ export const useOrderFetching = () => {
     } catch (error) {
       console.error('Error fetching active orders:', error);
       console.log('Falling back to mock data for active orders');
-      setActiveOrders(mockDataManager.getActiveOrders());
+      const mockOrders = await mockDataManager.getActiveOrders();
+      setActiveOrders(mockOrders);
     }
   }, []);
 

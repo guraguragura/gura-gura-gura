@@ -1,6 +1,6 @@
-
 import type { DriverOrder } from '@/hooks/useDriverOrders';
 import { mockAvailableOrders, mockActiveOrders, mockCompletedOrders } from '@/data/mockDriverOrders';
+import { RouteService } from './routeService';
 
 class MockDataManager {
   private availableOrders: DriverOrder[] = [];
@@ -8,27 +8,76 @@ class MockDataManager {
   private completedOrders: DriverOrder[] = [];
   private initialized = false;
 
-  initialize() {
+  async initialize() {
     if (!this.initialized) {
       this.availableOrders = [...mockAvailableOrders];
       this.activeOrders = [...mockActiveOrders];
       this.completedOrders = [...mockCompletedOrders];
+      
+      // Calculate real routes for available orders
+      await this.updateOrderRoutes();
+      
       this.initialized = true;
     }
   }
 
-  getAvailableOrders(): DriverOrder[] {
-    this.initialize();
+  private async updateOrderRoutes() {
+    console.log('MockDataManager: Updating routes for mock orders...');
+    
+    // Update available orders with real route calculations
+    for (let i = 0; i < this.availableOrders.length; i++) {
+      const order = this.availableOrders[i];
+      try {
+        const routeResult = await RouteService.calculateDeliveryRoute(order.delivery_address);
+        
+        if (routeResult && routeResult.success) {
+          this.availableOrders[i] = {
+            ...order,
+            distance: routeResult.distance,
+            estimated_delivery_time: routeResult.estimatedTime
+          };
+          console.log(`Updated route for order ${order.id}:`, {
+            distance: routeResult.distance,
+            time: routeResult.estimatedTime
+          });
+        }
+      } catch (error) {
+        console.warn(`Failed to calculate route for order ${order.id}:`, error);
+        // Keep the original hardcoded values as fallback
+      }
+    }
+
+    // Update active orders with real route calculations
+    for (let i = 0; i < this.activeOrders.length; i++) {
+      const order = this.activeOrders[i];
+      try {
+        const routeResult = await RouteService.calculateDeliveryRoute(order.delivery_address);
+        
+        if (routeResult && routeResult.success) {
+          this.activeOrders[i] = {
+            ...order,
+            distance: routeResult.distance,
+            estimated_delivery_time: routeResult.estimatedTime
+          };
+        }
+      } catch (error) {
+        console.warn(`Failed to calculate route for active order ${order.id}:`, error);
+      }
+    }
+  }
+
+  async getAvailableOrders(): Promise<DriverOrder[]> {
+    await this.initialize();
     return [...this.availableOrders];
   }
 
-  getActiveOrders(): DriverOrder[] {
-    this.initialize();
+  async getActiveOrders(): Promise<DriverOrder[]> {
+    await this.initialize();
     return [...this.activeOrders, ...this.completedOrders];
   }
 
-  acceptOrder(orderId: string): boolean {
-    this.initialize();
+  async acceptOrder(orderId: string): Promise<boolean> {
+    await this.initialize();
     const orderIndex = this.availableOrders.findIndex(order => order.id === orderId);
     
     if (orderIndex !== -1) {
@@ -51,8 +100,8 @@ class MockDataManager {
     return false;
   }
 
-  updateOrderStatus(orderId: string, newStatus: string): boolean {
-    this.initialize();
+  async updateOrderStatus(orderId: string, newStatus: string): Promise<boolean> {
+    await this.initialize();
     
     // Find order in active orders
     const orderIndex = this.activeOrders.findIndex(order => order.id === orderId);
@@ -89,8 +138,8 @@ class MockDataManager {
     return false;
   }
 
-  refuseOrder(orderId: string): boolean {
-    this.initialize();
+  async refuseOrder(orderId: string): Promise<boolean> {
+    await this.initialize();
     const orderIndex = this.availableOrders.findIndex(order => order.id === orderId);
     
     if (orderIndex !== -1) {
@@ -103,12 +152,19 @@ class MockDataManager {
     return false;
   }
 
-  // Reset to initial state (useful for testing)
-  reset() {
+  // Reset to initial state and recalculate routes
+  async reset() {
     this.availableOrders = [...mockAvailableOrders];
     this.activeOrders = [...mockActiveOrders];
     this.completedOrders = [...mockCompletedOrders];
-    console.log('Mock data manager reset to initial state');
+    await this.updateOrderRoutes();
+    console.log('Mock data manager reset to initial state with updated routes');
+  }
+
+  // Manually refresh routes for all orders
+  async refreshRoutes() {
+    console.log('MockDataManager: Refreshing all order routes...');
+    await this.updateOrderRoutes();
   }
 }
 

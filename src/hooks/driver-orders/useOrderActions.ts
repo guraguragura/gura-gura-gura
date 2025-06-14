@@ -18,12 +18,12 @@ export const useOrderActions = (
       // If using mock data, use the mock data manager
       if (useMockData || orderId.startsWith('mock_')) {
         console.log('Using mock data manager to accept order');
-        const success = mockDataManager.acceptOrder(orderId);
+        const success = await mockDataManager.acceptOrder(orderId);
         
         if (success) {
           toast({
             title: "Demo Mode",
-            description: "Order accepted successfully (demo)",
+            description: "Order accepted successfully (demo with real routing)",
           });
           
           // Refresh both lists to reflect the state change
@@ -74,7 +74,7 @@ export const useOrderActions = (
       // If using mock data, use the mock data manager
       if (useMockData || orderId.startsWith('mock_')) {
         console.log('Using mock data manager to refuse order');
-        const success = mockDataManager.refuseOrder(orderId);
+        const success = await mockDataManager.refuseOrder(orderId);
         
         if (success) {
           toast({
@@ -112,7 +112,7 @@ export const useOrderActions = (
       // If using mock data, use the mock data manager
       if (useMockData || orderId.startsWith('mock_')) {
         console.log('Using mock data manager to update order status');
-        const success = mockDataManager.updateOrderStatus(orderId, newStatus);
+        const success = await mockDataManager.updateOrderStatus(orderId, newStatus);
         
         if (success) {
           toast({
