@@ -16,17 +16,24 @@ export const useOrderFetching = () => {
     const customer = Array.isArray(order.customer) ? order.customer[0] : order.customer;
     const shippingAddress = Array.isArray(order.shipping_address) ? order.shipping_address[0] : order.shipping_address;
     
+    // Extract metadata values with fallbacks
+    const metadata = order.metadata || {};
+    const totalAmount = metadata.total_amount || 15000;
+    const itemsCount = metadata.items_count || 1;
+    const estimatedDeliveryTime = metadata.estimated_delivery_time || '25-30 mins';
+    const distance = metadata.distance || '2.5 km';
+    
     return {
       id: order.id,
       customer_name: customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Unknown Customer' : 'Unknown Customer',
-      customer_phone: customer?.phone || shippingAddress?.phone || '',
+      customer_phone: customer?.phone || shippingAddress?.phone || '+250788000000',
       delivery_address: shippingAddress ? 
         `${shippingAddress.address_1 || ''} ${shippingAddress.address_2 || ''}, ${shippingAddress.city || ''}`.trim() || 'No address provided' : 
         'No address provided',
-      items_count: 0,
-      total_amount: 'RWF 0',
-      estimated_delivery_time: '25-30 mins',
-      distance: '2.5 km',
+      items_count: itemsCount,
+      total_amount: `RWF ${totalAmount.toLocaleString()}`,
+      estimated_delivery_time: estimatedDeliveryTime,
+      distance: distance,
       unified_status: order.unified_status,
       created_at: order.created_at
     };
@@ -44,6 +51,7 @@ export const useOrderFetching = () => {
           shipping_address_id,
           unified_status,
           created_at,
+          metadata,
           customer:customer_id (
             first_name,
             last_name,
@@ -57,7 +65,8 @@ export const useOrderFetching = () => {
           )
         `)
         .eq('unified_status', 'ready_for_pickup')
-        .is('driver_id', null);
+        .is('driver_id', null)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching available orders:', error);
@@ -91,6 +100,7 @@ export const useOrderFetching = () => {
           shipping_address_id,
           unified_status,
           created_at,
+          metadata,
           customer:customer_id (
             first_name,
             last_name,
@@ -104,7 +114,8 @@ export const useOrderFetching = () => {
           )
         `)
         .eq('driver_id', user.id)
-        .in('unified_status', ['assigned_to_driver', 'picked_up', 'out_for_delivery', 'delivered']);
+        .in('unified_status', ['assigned_to_driver', 'picked_up', 'out_for_delivery', 'delivered'])
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching active orders:', error);

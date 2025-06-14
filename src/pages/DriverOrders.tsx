@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useDriverOrders } from '@/hooks/useDriverOrders';
 import OrderTabs from '@/components/driver/OrderTabs';
+import TestDataHelper from '@/components/driver/TestDataHelper';
 import type { Database } from '@/integrations/supabase/types';
 
 type UnifiedOrderStatus = Database["public"]["Enums"]["unified_order_status_enum"];
@@ -36,6 +37,8 @@ const DriverOrders = () => {
           <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
           <p className="text-gray-600 mt-2">Manage your delivery assignments</p>
         </div>
+
+        <TestDataHelper />
 
         <OrderTabs 
           activeTab={activeTab}
