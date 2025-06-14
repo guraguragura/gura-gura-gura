@@ -1,4 +1,4 @@
-import type { DriverOrder } from '@/hooks/useDriverOrders';
+import type { DriverOrder, UnifiedOrderStatus } from '@/hooks/driver-orders/types';
 import { mockAvailableOrders, mockActiveOrders, mockCompletedOrders } from '@/data/mockDriverOrders';
 import { RouteService } from './routeService';
 
@@ -100,7 +100,7 @@ class MockDataManager {
     return false;
   }
 
-  async updateOrderStatus(orderId: string, newStatus: string): Promise<boolean> {
+  async updateOrderStatus(orderId: string, newStatus: UnifiedOrderStatus): Promise<boolean> {
     await this.initialize();
     
     // Find order in active orders
