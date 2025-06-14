@@ -24,18 +24,6 @@ interface RpcResult {
   order_id?: string;
 }
 
-// Type for database function result
-interface DbOrderResult {
-  order_id: string;
-  customer_name: string;
-  customer_phone: string;
-  delivery_address: string;
-  items_count: number;
-  total_amount: number;
-  unified_status: string;
-  created_at: string;
-}
-
 export const useDriverOrders = () => {
   const [availableOrders, setAvailableOrders] = useState<DriverOrder[]>([]);
   const [activeOrders, setActiveOrders] = useState<DriverOrder[]>([]);
@@ -47,30 +35,56 @@ export const useDriverOrders = () => {
     try {
       console.log('Fetching available orders...');
       
-      // Use the database function for more reliable queries
-      const { data, error } = await supabase.rpc('get_driver_orders', {
-        p_status: 'ready_for_pickup'
-      });
+      // Direct query with proper joins
+      const { data: orders, error } = await supabase
+        .from('order')
+        .select(`
+          id,
+          customer_id,
+          shipping_address_id,
+          unified_status,
+          created_at,
+          customer:customer_id (
+            first_name,
+            last_name,
+            phone
+          ),
+          shipping_address:shipping_address_id (
+            address_1,
+            address_2,
+            city,
+            phone
+          )
+        `)
+        .eq('unified_status', 'ready_for_pickup')
+        .is('driver_id', null);
 
       if (error) {
         console.error('Error fetching available orders:', error);
         throw error;
       }
 
-      console.log('Available orders data:', data);
+      console.log('Available orders data:', orders);
 
-      const formattedOrders: DriverOrder[] = (data as DbOrderResult[])?.map(order => ({
-        id: order.order_id,
-        customer_name: order.customer_name || 'Unknown Customer',
-        customer_phone: order.customer_phone || '',
-        delivery_address: order.delivery_address || 'No address provided',
-        items_count: order.items_count || 0,
-        total_amount: `RWF ${(order.total_amount || 0).toLocaleString()}`,
-        estimated_delivery_time: '25-30 mins',
-        distance: '2.5 km',
-        unified_status: order.unified_status,
-        created_at: order.created_at
-      })) || [];
+      const formattedOrders: DriverOrder[] = (orders || []).map(order => {
+        const customer = Array.isArray(order.customer) ? order.customer[0] : order.customer;
+        const shippingAddress = Array.isArray(order.shipping_address) ? order.shipping_address[0] : order.shipping_address;
+        
+        return {
+          id: order.id,
+          customer_name: customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Unknown Customer' : 'Unknown Customer',
+          customer_phone: customer?.phone || shippingAddress?.phone || '',
+          delivery_address: shippingAddress ? 
+            `${shippingAddress.address_1 || ''} ${shippingAddress.address_2 || ''}, ${shippingAddress.city || ''}`.trim() || 'No address provided' : 
+            'No address provided',
+          items_count: 0, // Will be populated separately if needed
+          total_amount: 'RWF 0', // Will be calculated separately if needed
+          estimated_delivery_time: '25-30 mins',
+          distance: '2.5 km',
+          unified_status: order.unified_status,
+          created_at: order.created_at
+        };
+      });
 
       setAvailableOrders(formattedOrders);
     } catch (error) {
@@ -89,37 +103,58 @@ export const useDriverOrders = () => {
     try {
       console.log('Fetching active orders for driver:', user.id);
       
-      // Use the database function for active orders
-      const { data, error } = await supabase.rpc('get_driver_orders', {
-        p_driver_id: user.id
-      });
+      // Direct query for driver's orders
+      const { data: orders, error } = await supabase
+        .from('order')
+        .select(`
+          id,
+          customer_id,
+          shipping_address_id,
+          unified_status,
+          created_at,
+          customer:customer_id (
+            first_name,
+            last_name,
+            phone
+          ),
+          shipping_address:shipping_address_id (
+            address_1,
+            address_2,
+            city,
+            phone
+          )
+        `)
+        .eq('driver_id', user.id)
+        .in('unified_status', ['assigned_to_driver', 'picked_up', 'out_for_delivery', 'delivered']);
 
       if (error) {
         console.error('Error fetching active orders:', error);
         throw error;
       }
 
-      console.log('Active orders data:', data);
+      console.log('Active orders data:', orders);
 
-      const formattedOrders: DriverOrder[] = (data as DbOrderResult[])?.map(order => ({
-        id: order.order_id,
-        customer_name: order.customer_name || 'Unknown Customer',
-        customer_phone: order.customer_phone || '',
-        delivery_address: order.delivery_address || 'No address provided',
-        items_count: order.items_count || 0,
-        total_amount: `RWF ${(order.total_amount || 0).toLocaleString()}`,
-        estimated_delivery_time: '25-30 mins',
-        distance: '2.5 km',
-        unified_status: order.unified_status,
-        created_at: order.created_at
-      })) || [];
+      const formattedOrders: DriverOrder[] = (orders || []).map(order => {
+        const customer = Array.isArray(order.customer) ? order.customer[0] : order.customer;
+        const shippingAddress = Array.isArray(order.shipping_address) ? order.shipping_address[0] : order.shipping_address;
+        
+        return {
+          id: order.id,
+          customer_name: customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Unknown Customer' : 'Unknown Customer',
+          customer_phone: customer?.phone || shippingAddress?.phone || '',
+          delivery_address: shippingAddress ? 
+            `${shippingAddress.address_1 || ''} ${shippingAddress.address_2 || ''}, ${shippingAddress.city || ''}`.trim() || 'No address provided' : 
+            'No address provided',
+          items_count: 0, // Will be populated separately if needed
+          total_amount: 'RWF 0', // Will be calculated separately if needed
+          estimated_delivery_time: '25-30 mins',
+          distance: '2.5 km',
+          unified_status: order.unified_status,
+          created_at: order.created_at
+        };
+      });
 
-      // Filter out delivered orders for active orders
-      const filteredActiveOrders = formattedOrders.filter(order => 
-        ['assigned_to_driver', 'picked_up', 'out_for_delivery'].includes(order.unified_status)
-      );
-
-      setActiveOrders(filteredActiveOrders);
+      setActiveOrders(formattedOrders);
     } catch (error) {
       console.error('Error fetching active orders:', error);
       toast({
@@ -148,25 +183,30 @@ export const useDriverOrders = () => {
 
       console.log('Accept order response:', data);
       
-      // Type assertion for RPC result
-      const result = data as RpcResult;
-      
-      if (result?.success) {
-        toast({
-          title: "Success",
-          description: "Order accepted successfully",
-        });
+      // Type guard for RPC result
+      const result = data as unknown;
+      if (result && typeof result === 'object' && 'success' in result && 'message' in result) {
+        const rpcResult = result as RpcResult;
         
-        // Refresh both lists
-        await Promise.all([fetchAvailableOrders(), fetchActiveOrders()]);
-        return true;
+        if (rpcResult.success) {
+          toast({
+            title: "Success",
+            description: "Order accepted successfully",
+          });
+          
+          // Refresh both lists
+          await Promise.all([fetchAvailableOrders(), fetchActiveOrders()]);
+          return true;
+        } else {
+          toast({
+            title: "Error",
+            description: rpcResult.message || "Failed to accept order",
+            variant: "destructive"
+          });
+          return false;
+        }
       } else {
-        toast({
-          title: "Error",
-          description: result?.message || "Failed to accept order",
-          variant: "destructive"
-        });
-        return false;
+        throw new Error('Invalid response format');
       }
     } catch (error) {
       console.error('Error accepting order:', error);
@@ -198,25 +238,30 @@ export const useDriverOrders = () => {
 
       console.log('Refuse order response:', data);
       
-      // Type assertion for RPC result
-      const result = data as RpcResult;
-      
-      if (result?.success) {
-        toast({
-          title: "Order Refused",
-          description: "Order refusal has been recorded",
-        });
+      // Type guard for RPC result
+      const result = data as unknown;
+      if (result && typeof result === 'object' && 'success' in result && 'message' in result) {
+        const rpcResult = result as RpcResult;
         
-        // Refresh available orders
-        await fetchAvailableOrders();
-        return true;
+        if (rpcResult.success) {
+          toast({
+            title: "Order Refused",
+            description: "Order refusal has been recorded",
+          });
+          
+          // Refresh available orders
+          await fetchAvailableOrders();
+          return true;
+        } else {
+          toast({
+            title: "Error",
+            description: rpcResult.message || "Failed to refuse order",
+            variant: "destructive"
+          });
+          return false;
+        }
       } else {
-        toast({
-          title: "Error",
-          description: result?.message || "Failed to refuse order",
-          variant: "destructive"
-        });
-        return false;
+        throw new Error('Invalid response format');
       }
     } catch (error) {
       console.error('Error refusing order:', error);
@@ -233,7 +278,7 @@ export const useDriverOrders = () => {
     try {
       console.log('Updating order status:', orderId, 'to:', newStatus);
       
-      // Cast newStatus to the proper enum type
+      // Define valid status values for type safety
       const validStatuses = [
         'ready_for_pickup', 'assigned_to_driver', 'picked_up', 
         'out_for_delivery', 'delivered', 'cancelled', 'pending_payment',
@@ -247,7 +292,7 @@ export const useDriverOrders = () => {
       const { error } = await supabase
         .from('order')
         .update({ 
-          unified_status: newStatus as any,
+          unified_status: newStatus,
           updated_at: new Date().toISOString()
         })
         .eq('id', orderId)
@@ -264,7 +309,7 @@ export const useDriverOrders = () => {
           .from('order_status_history')
           .insert({
             order_id: orderId,
-            new_status: newStatus as any,
+            new_status: newStatus,
             changed_by: user?.id,
             changed_by_type: 'driver',
             notes: `Status updated to ${newStatus} by driver`
