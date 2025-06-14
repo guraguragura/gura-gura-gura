@@ -1,8 +1,11 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
+
+// Import the proper enum type from Supabase
+type UnifiedOrderStatus = Database["public"]["Enums"]["unified_order_status_enum"];
 
 export interface DriverOrder {
   id: string;
@@ -77,8 +80,8 @@ export const useDriverOrders = () => {
           delivery_address: shippingAddress ? 
             `${shippingAddress.address_1 || ''} ${shippingAddress.address_2 || ''}, ${shippingAddress.city || ''}`.trim() || 'No address provided' : 
             'No address provided',
-          items_count: 0, // Will be populated separately if needed
-          total_amount: 'RWF 0', // Will be calculated separately if needed
+          items_count: 0,
+          total_amount: 'RWF 0',
           estimated_delivery_time: '25-30 mins',
           distance: '2.5 km',
           unified_status: order.unified_status,
@@ -145,8 +148,8 @@ export const useDriverOrders = () => {
           delivery_address: shippingAddress ? 
             `${shippingAddress.address_1 || ''} ${shippingAddress.address_2 || ''}, ${shippingAddress.city || ''}`.trim() || 'No address provided' : 
             'No address provided',
-          items_count: 0, // Will be populated separately if needed
-          total_amount: 'RWF 0', // Will be calculated separately if needed
+          items_count: 0,
+          total_amount: 'RWF 0',
           estimated_delivery_time: '25-30 mins',
           distance: '2.5 km',
           unified_status: order.unified_status,
@@ -274,18 +277,18 @@ export const useDriverOrders = () => {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateOrderStatus = async (orderId: string, newStatus: UnifiedOrderStatus) => {
     try {
       console.log('Updating order status:', orderId, 'to:', newStatus);
       
-      // Define valid status values for type safety
-      const validStatuses = [
+      // Define valid status values using the proper enum type
+      const validStatuses: UnifiedOrderStatus[] = [
         'ready_for_pickup', 'assigned_to_driver', 'picked_up', 
         'out_for_delivery', 'delivered', 'cancelled', 'pending_payment',
         'paid', 'processing', 'failed_delivery', 'refunded'
-      ] as const;
+      ];
       
-      if (!validStatuses.includes(newStatus as any)) {
+      if (!validStatuses.includes(newStatus)) {
         throw new Error(`Invalid status: ${newStatus}`);
       }
 
@@ -303,7 +306,7 @@ export const useDriverOrders = () => {
         throw error;
       }
 
-      // Add to status history - simplified without foreign key for now
+      // Add to status history with proper typing
       try {
         await supabase
           .from('order_status_history')
