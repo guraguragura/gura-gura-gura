@@ -11,6 +11,10 @@ export const useOrderActions = (
 ) => {
   const { toast } = useToast();
 
+  const generateVerificationCode = (): string => {
+    return Math.floor(Math.random() * 90 + 10).toString(); // Generates 10-99
+  };
+
   const acceptOrder = async (orderId: string) => {
     try {
       console.log('Accepting order:', orderId);
@@ -109,6 +113,25 @@ export const useOrderActions = (
     try {
       console.log('Updating order status:', orderId, 'to:', newStatus);
       
+      // Generate verification code when starting delivery
+      let updateData: any = {
+        unified_status: newStatus,
+        updated_at: new Date().toISOString()
+      };
+
+      if (newStatus === 'out_for_delivery') {
+        const verificationCode = generateVerificationCode();
+        updateData.delivery_verification_code = verificationCode;
+        
+        // In a real app, you would send this code to the customer via SMS/email
+        console.log(`Generated verification code ${verificationCode} for order ${orderId}`);
+        
+        toast({
+          title: "Demo Mode",
+          description: `Verification code ${verificationCode} generated and sent to customer`,
+        });
+      }
+      
       // If using mock data, use the mock data manager
       if (useMockData || orderId.startsWith('mock_')) {
         console.log('Using mock data manager to update order status');
@@ -139,10 +162,7 @@ export const useOrderActions = (
 
       const { error } = await supabase
         .from('order')
-        .update({ 
-          unified_status: newStatus as UnifiedOrderStatus,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', orderId);
 
       if (error) {

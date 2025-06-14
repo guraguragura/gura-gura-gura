@@ -1936,6 +1936,7 @@ export type Database = {
           delivery_status:
             | Database["public"]["Enums"]["delivery_status_enum"]
             | null
+          delivery_verification_code: string | null
           display_id: number | null
           driver_accepted_at: string | null
           driver_assigned_at: string | null
@@ -1974,6 +1975,7 @@ export type Database = {
           delivery_status?:
             | Database["public"]["Enums"]["delivery_status_enum"]
             | null
+          delivery_verification_code?: string | null
           display_id?: number | null
           driver_accepted_at?: string | null
           driver_assigned_at?: string | null
@@ -2012,6 +2014,7 @@ export type Database = {
           delivery_status?:
             | Database["public"]["Enums"]["delivery_status_enum"]
             | null
+          delivery_verification_code?: string | null
           display_id?: number | null
           driver_accepted_at?: string | null
           driver_assigned_at?: string | null

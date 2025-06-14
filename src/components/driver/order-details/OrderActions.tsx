@@ -1,8 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, Truck, MapPin } from 'lucide-react';
+import { DeliveryConfirmationModal } from '@/components/driver/delivery-confirmation/DeliveryConfirmationModal';
+import { deliveryVerificationService } from '@/services/deliveryVerificationService';
+import { useToast } from '@/hooks/use-toast';
 import type { DriverOrder } from '@/hooks/useDriverOrders';
 
 interface OrderActionsProps {
@@ -11,8 +14,50 @@ interface OrderActionsProps {
 }
 
 export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdate }) => {
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const { toast } = useToast();
+
   const handleStatusUpdate = (newStatus: string) => {
     onStatusUpdate(order.id, newStatus);
+  };
+
+  const handleDeliveryConfirmation = async (verificationCode: string, notes?: string) => {
+    try {
+      // For mock orders, use simplified validation
+      if (order.id.startsWith('mock_')) {
+        console.log('Mock delivery confirmation with code:', verificationCode);
+        await onStatusUpdate(order.id, 'delivered');
+        
+        toast({
+          title: "Demo Delivery Confirmed",
+          description: `Order delivered with verification code: ${verificationCode}`,
+        });
+        return;
+      }
+
+      // For real orders, use the verification service
+      const result = await deliveryVerificationService.validateAndCompleteDelivery(
+        order.id, 
+        verificationCode, 
+        notes
+      );
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
+      // Refresh the order data
+      await onStatusUpdate(order.id, 'delivered');
+      
+      toast({
+        title: "Delivery Confirmed",
+        description: "Order has been successfully delivered to the customer.",
+      });
+    } catch (error) {
+      console.error('Delivery confirmation error:', error);
+      // Re-throw the error so the modal can handle it
+      throw new Error(error instanceof Error ? error.message : 'Invalid verification code');
+    }
   };
 
   const getAvailableActions = () => {
@@ -24,7 +69,8 @@ export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdat
             status: 'picked_up',
             icon: Check,
             variant: 'default' as const,
-            className: 'bg-[#84D1D3] hover:bg-[#6bb6b9]'
+            className: 'bg-[#84D1D3] hover:bg-[#6bb6b9]',
+            action: () => handleStatusUpdate('picked_up')
           }
         ];
       case 'picked_up':
@@ -34,17 +80,19 @@ export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdat
             status: 'out_for_delivery',
             icon: Truck,
             variant: 'default' as const,
-            className: 'bg-yellow-600 hover:bg-yellow-700'
+            className: 'bg-yellow-600 hover:bg-yellow-700',
+            action: () => handleStatusUpdate('out_for_delivery')
           }
         ];
       case 'out_for_delivery':
         return [
           {
-            label: 'Mark as Delivered',
+            label: 'Confirm Delivery',
             status: 'delivered',
             icon: MapPin,
             variant: 'default' as const,
-            className: 'bg-green-600 hover:bg-green-700'
+            className: 'bg-green-600 hover:bg-green-700',
+            action: () => setShowDeliveryModal(true)
           }
         ];
       default:
@@ -59,28 +107,38 @@ export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdat
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Available Actions</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-3">
-          {availableActions.map((action) => {
-            const IconComponent = action.icon;
-            return (
-              <Button
-                key={action.status}
-                onClick={() => handleStatusUpdate(action.status)}
-                variant={action.variant}
-                className={`flex items-center gap-2 ${action.className}`}
-              >
-                <IconComponent className="h-4 w-4" />
-                {action.label}
-              </Button>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Available Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            {availableActions.map((action) => {
+              const IconComponent = action.icon;
+              return (
+                <Button
+                  key={action.status}
+                  onClick={action.action}
+                  variant={action.variant}
+                  className={`flex items-center gap-2 ${action.className}`}
+                >
+                  <IconComponent className="h-4 w-4" />
+                  {action.label}
+                </Button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      <DeliveryConfirmationModal
+        isOpen={showDeliveryModal}
+        onClose={() => setShowDeliveryModal(false)}
+        onConfirm={handleDeliveryConfirmation}
+        customerName={order.customer_name}
+        deliveryAddress={order.delivery_address}
+      />
+    </>
   );
 };
