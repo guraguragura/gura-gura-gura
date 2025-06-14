@@ -38,23 +38,26 @@ const AppContent = () => {
         {/* Driver authentication - login only */}
         <Route path="/auth" element={<AuthPage />} />
         
-        {/* Protected driver routes */}
+        {/* Public driver routes */}
         <Route path="/dashboard" element={
-          <ProtectedRoute>
+          <>
+            <DriverNavbar />
             <DriverDashboard />
-          </ProtectedRoute>
+          </>
         } />
         
         <Route path="/orders" element={
-          <ProtectedRoute>
+          <>
+            <DriverNavbar />
             <DriverOrders />
-          </ProtectedRoute>
+          </>
         } />
         
         <Route path="/profile" element={
-          <ProtectedRoute>
+          <>
+            <DriverNavbar />
             <DriverProfile />
-          </ProtectedRoute>
+          </>
         } />
         
         {/* Default redirect to dashboard */}

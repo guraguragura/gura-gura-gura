@@ -9,7 +9,8 @@ import {
   User, 
   Menu, 
   X,
-  LogOut
+  LogOut,
+  LogIn
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -69,13 +70,24 @@ const DriverNavbar = () => {
                     </Link>
                   );
                 })}
-                <button
-                  onClick={signOut}
-                  className="flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 w-full"
-                >
-                  <LogOut className="h-5 w-5 mr-3" />
-                  Sign Out
-                </button>
+                {user ? (
+                  <button
+                    onClick={signOut}
+                    className="flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 w-full"
+                  >
+                    <LogOut className="h-5 w-5 mr-3" />
+                    Sign Out
+                  </button>
+                ) : (
+                  <Link
+                    to="/auth"
+                    className="flex items-center px-4 py-3 text-sm text-blue-600 hover:bg-blue-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <LogIn className="h-5 w-5 mr-3" />
+                    Sign In
+                  </Link>
+                )}
               </div>
             </div>
           )}
@@ -120,18 +132,34 @@ const DriverNavbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-600">
-              Welcome, {user?.user_metadata?.first_name || 'Driver'}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={signOut}
-              className="flex items-center"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+            {user ? (
+              <>
+                <span className="text-sm text-gray-600">
+                  Welcome, {user?.user_metadata?.first_name || 'Driver'}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={signOut}
+                  className="flex items-center"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="flex items-center"
+              >
+                <Link to="/auth">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Sign In
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>
