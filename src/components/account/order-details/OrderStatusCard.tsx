@@ -15,11 +15,21 @@ import {
   CardContent 
 } from '@/components/ui/card';
 import { OrderStatus } from '../Orders';
+import { RealTimeOrderStatus } from '@/components/order-tracking/RealTimeOrderStatus';
+import { DetailedOrderTimeline } from '@/components/order-tracking/DetailedOrderTimeline';
 
 interface OrderStatusCardProps {
   order: {
+    id: string;
     status: OrderStatus;
     date: string;
+    unified_status?: string;
+    timestamps?: {
+      paid_at?: string;
+      assigned_at?: string;
+      picked_up_at?: string;
+      delivered_at?: string;
+    };
   };
   currentStepIndex: number;
   isOrderCanceled: boolean;
@@ -53,73 +63,43 @@ const statusConfig: Record<OrderStatus, { icon: React.ReactNode; color: string; 
   }
 };
 
-const orderSteps = [
-  { status: 'pending', label: 'Order Placed' },
-  { status: 'processing', label: 'Processing' },
-  { status: 'out_for_delivery', label: 'Out for Delivery' },
-  { status: 'delivered', label: 'Delivered' }
-];
-
 export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({ 
   order, 
   currentStepIndex, 
   isOrderCanceled 
 }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Order Status</CardTitle>
-        <CardDescription>Placed on {order.date}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className={`flex items-center text-lg font-medium ${statusConfig[order.status].color} mb-6`}>
-          {statusConfig[order.status].icon}
-          <span className="ml-2">{statusConfig[order.status].label}</span>
-        </div>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Order Status</CardTitle>
+          <CardDescription>Placed on {order.date}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RealTimeOrderStatus 
+            orderId={order.id}
+            initialStatus={order.status}
+            initialUnifiedStatus={order.unified_status}
+          />
+        </CardContent>
+      </Card>
 
-        {!isOrderCanceled && (
-          <div className="relative">
-            <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 z-0"></div>
-            <div className="space-y-8">
-              {orderSteps.map((step, index) => {
-                const isCompleted = index <= currentStepIndex;
-                const isCurrent = index === currentStepIndex;
-                
-                return (
-                  <div key={step.status} className="relative flex items-center">
-                    <div className={`z-10 flex items-center justify-center w-8 h-8 rounded-full ${
-                      isCompleted 
-                        ? 'bg-green-500 text-white' 
-                        : 'bg-gray-200 text-gray-500'
-                    } ${isCurrent ? 'ring-2 ring-offset-2 ring-green-500' : ''}`}>
-                      {isCompleted ? <CheckCircle className="h-4 w-4" /> : index + 1}
-                    </div>
-                    <div className="ml-4">
-                      <p className={`font-medium ${isCompleted ? 'text-gray-900' : 'text-gray-500'}`}>
-                        {step.label}
-                      </p>
-                      {isCurrent && (
-                        <p className="text-sm text-gray-500">
-                          {step.status === 'pending' && 'We have received your order.'}
-                          {step.status === 'processing' && 'Your order is being prepared.'}
-                          {step.status === 'out_for_delivery' && 'Your order is on its way to you.'}
-                          {step.status === 'delivered' && 'Your order has been delivered.'}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+      {!isOrderCanceled && order.unified_status && (
+        <DetailedOrderTimeline 
+          unifiedStatus={order.unified_status}
+          timestamps={order.timestamps}
+        />
+      )}
+      
+      {isOrderCanceled && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="border border-red-200 bg-red-50 rounded-md p-4 text-red-500">
+              <p>This order has been canceled. If you have any questions, please contact our customer support.</p>
             </div>
-          </div>
-        )}
-        
-        {isOrderCanceled && (
-          <div className="border border-red-200 bg-red-50 rounded-md p-4 text-red-500">
-            <p>This order has been canceled. If you have any questions, please contact our customer support.</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };

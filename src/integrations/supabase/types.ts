@@ -6009,6 +6009,12 @@ export type Database = {
           is_new: boolean
         }[]
       }
+      map_unified_status_to_customer_status: {
+        Args: {
+          unified_status_val: Database["public"]["Enums"]["unified_order_status_enum"]
+        }
+        Returns: Database["public"]["Enums"]["order_status_enum"]
+      }
       refuse_driver_order: {
         Args: { p_order_id: string; p_driver_id: string; p_reason?: string }
         Returns: Json
