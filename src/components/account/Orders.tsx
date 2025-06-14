@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, Package, CheckCircle, Truck, XCircle } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import { RealTimeOrderStatus } from '@/components/order-tracking/RealTimeOrderStatus';
 import { useAllOrdersRealtime } from '@/hooks/useAllOrdersRealtime';
+import { useOrders } from '@/hooks/useOrders';
+import { OrdersSkeleton } from './OrdersSkeleton';
+import { OrdersError } from './OrdersError';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Define the possible order statuses
 export type OrderStatus = 'pending' | 'processing' | 'out_for_delivery' | 'delivered' | 'canceled';
@@ -98,16 +102,51 @@ const mockOrders: Order[] = [
 ];
 
 export const Orders = () => {
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
-  const { formatPrice, isLoading } = useCurrency();
+  const { user } = useAuth();
+  const { orders, loading, error, retryFetch, refetch } = useOrders();
+  const { formatPrice, isLoading: currencyLoading } = useCurrency();
+  const [isRetrying, setIsRetrying] = useState(false);
 
   // Set up real-time updates for all orders
-  useAllOrdersRealtime('user-id', () => {
-    // In a real app, you'd refresh the orders from the database here
-    console.log('Orders updated, would refresh from database');
+  useAllOrdersRealtime(user?.id, () => {
+    console.log('Orders updated, refreshing from database');
+    refetch();
   });
 
-  // If you have no orders
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    await retryFetch();
+    setIsRetrying(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Orders</h2>
+          <p className="text-gray-500 mt-1">View and track your orders</p>
+        </div>
+        <OrdersSkeleton />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Orders</h2>
+          <p className="text-gray-500 mt-1">View and track your orders</p>
+        </div>
+        <OrdersError 
+          message={error}
+          onRetry={handleRetry}
+          isRetrying={isRetrying}
+        />
+      </div>
+    );
+  }
+
   if (orders.length === 0) {
     return (
       <div className="space-y-6">
@@ -117,6 +156,10 @@ export const Orders = () => {
         </div>
         
         <div className="border rounded-lg p-6 text-center py-12">
+          <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            No Orders Yet
+          </h3>
           <p className="text-gray-500">You haven't placed any orders yet.</p>
         </div>
       </div>
@@ -172,7 +215,7 @@ export const Orders = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {isLoading ? '...' : formatPrice(order.total)}
+                      {currencyLoading ? '...' : formatPrice(order.total)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

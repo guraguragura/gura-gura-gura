@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/hooks/useCurrency';
 import { toast } from '@/hooks/use-toast';
+import { useOrderDetails } from '@/hooks/useOrderDetails';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Import refactored components
 import { OrderStatusCard } from './order-details/OrderStatusCard';
@@ -12,7 +14,6 @@ import { OrderInfoCard } from './order-details/OrderInfoCard';
 import { OrderItemsTable } from './order-details/OrderItemsTable';
 import { OrderActions } from './order-details/OrderActions';
 import { OrderNotFound } from './order-details/OrderNotFound';
-import { mockOrderDetails } from './order-details/mock-data';
 import { OrderStatus } from './Orders';
 
 const orderSteps = [
@@ -25,12 +26,18 @@ const orderSteps = [
 export const OrderDetails = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const { formatPrice, isLoading } = useCurrency();
+  const { formatPrice, isLoading: currencyLoading } = useCurrency();
+  const { orderDetails: order, loading, error, retryFetch } = useOrderDetails(orderId);
+  const [isRetrying, setIsRetrying] = useState(false);
   
-  const order = orderId ? mockOrderDetails[orderId] : null;
-
   const goBack = () => {
     navigate('/account/orders');
+  };
+
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    await retryFetch();
+    setIsRetrying(false);
   };
 
   const handleCancelOrder = () => {
@@ -46,8 +53,70 @@ export const OrderDetails = () => {
     }
   };
 
-  if (!order) {
-    return <OrderNotFound onGoBack={goBack} />;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center">
+          <Button variant="ghost" onClick={goBack} className="mr-2">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Orders
+          </Button>
+          <Skeleton className="h-8 w-48" />
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-4">
+            <Skeleton className="h-64 w-full" />
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center">
+          <Button variant="ghost" onClick={goBack} className="mr-2">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Orders
+          </Button>
+        </div>
+        
+        {error ? (
+          <div className="border rounded-lg p-6 text-center py-12">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Unable to Load Order Details
+            </h3>
+            <p className="text-gray-500 mb-4">{error}</p>
+            <Button 
+              onClick={handleRetry} 
+              disabled={isRetrying}
+              className="gap-2"
+            >
+              {isRetrying ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Retrying...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </>
+              )}
+            </Button>
+          </div>
+        ) : (
+          <OrderNotFound onGoBack={goBack} />
+        )}
+      </div>
+    );
   }
 
   const currentStepIndex = orderSteps.findIndex(step => step.status === order.status);
@@ -76,7 +145,7 @@ export const OrderDetails = () => {
       <OrderItemsTable 
         order={order} 
         formatPrice={formatPrice} 
-        isLoading={isLoading} 
+        isLoading={currencyLoading} 
       />
 
       <OrderActions 
