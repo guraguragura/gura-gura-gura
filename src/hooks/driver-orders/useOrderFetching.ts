@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { DriverOrder } from './types';
-import { mockAvailableOrders, mockActiveOrders, mockCompletedOrders } from '@/data/mockDriverOrders';
+import { mockDataManager } from '@/services/mockDataManager';
 
 export const useOrderFetching = () => {
   const [availableOrders, setAvailableOrders] = useState<DriverOrder[]>([]);
@@ -77,7 +77,7 @@ export const useOrderFetching = () => {
       
       if (!orders || orders.length === 0) {
         console.log('No real orders found, using mock data for available orders');
-        setAvailableOrders(mockAvailableOrders);
+        setAvailableOrders(mockDataManager.getAvailableOrders());
         setUseMockData(true);
       } else {
         const formattedOrders: DriverOrder[] = orders.map(formatOrder);
@@ -87,7 +87,7 @@ export const useOrderFetching = () => {
     } catch (error) {
       console.error('Error fetching available orders:', error);
       console.log('Falling back to mock data for available orders');
-      setAvailableOrders(mockAvailableOrders);
+      setAvailableOrders(mockDataManager.getAvailableOrders());
       setUseMockData(true);
       
       toast({
@@ -134,7 +134,7 @@ export const useOrderFetching = () => {
       
       if (!orders || orders.length === 0) {
         console.log('No real active orders found, using mock data');
-        setActiveOrders([...mockActiveOrders, ...mockCompletedOrders]);
+        setActiveOrders(mockDataManager.getActiveOrders());
       } else {
         const formattedOrders: DriverOrder[] = orders.map(formatOrder);
         setActiveOrders(formattedOrders);
@@ -142,7 +142,7 @@ export const useOrderFetching = () => {
     } catch (error) {
       console.error('Error fetching active orders:', error);
       console.log('Falling back to mock data for active orders');
-      setActiveOrders([...mockActiveOrders, ...mockCompletedOrders]);
+      setActiveOrders(mockDataManager.getActiveOrders());
     }
   }, []);
 

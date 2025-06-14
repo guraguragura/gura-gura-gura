@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { UnifiedOrderStatus } from './types';
+import { mockDataManager } from '@/services/mockDataManager';
 
 export const useOrderActions = (
   fetchAvailableOrders: () => Promise<void>, 
@@ -14,21 +15,23 @@ export const useOrderActions = (
     try {
       console.log('Accepting order:', orderId);
       
-      // If using mock data, just simulate the action
+      // If using mock data, use the mock data manager
       if (useMockData || orderId.startsWith('mock_')) {
-        console.log('Simulating order acceptance for demo purposes');
-        toast({
-          title: "Demo Mode",
-          description: "Order accepted successfully (demo)",
-        });
+        console.log('Using mock data manager to accept order');
+        const success = mockDataManager.acceptOrder(orderId);
         
-        // Simulate a delay and refresh
-        setTimeout(() => {
-          fetchAvailableOrders();
-          fetchActiveOrders();
-        }, 500);
-        
-        return true;
+        if (success) {
+          toast({
+            title: "Demo Mode",
+            description: "Order accepted successfully (demo)",
+          });
+          
+          // Refresh both lists to reflect the state change
+          await Promise.all([fetchAvailableOrders(), fetchActiveOrders()]);
+          return true;
+        } else {
+          throw new Error('Order not found in available orders');
+        }
       }
       
       // For real orders, update the database
@@ -68,15 +71,20 @@ export const useOrderActions = (
     try {
       console.log('Refusing order:', orderId);
       
-      // If using mock data, just simulate the action
+      // If using mock data, use the mock data manager
       if (useMockData || orderId.startsWith('mock_')) {
-        console.log('Simulating order refusal for demo purposes');
-        toast({
-          title: "Demo Mode",
-          description: "Order refusal recorded (demo)",
-        });
+        console.log('Using mock data manager to refuse order');
+        const success = mockDataManager.refuseOrder(orderId);
         
-        return true;
+        if (success) {
+          toast({
+            title: "Demo Mode",
+            description: "Order refusal recorded (demo)",
+          });
+          
+          await fetchAvailableOrders();
+          return true;
+        }
       }
       
       toast({
@@ -101,20 +109,22 @@ export const useOrderActions = (
     try {
       console.log('Updating order status:', orderId, 'to:', newStatus);
       
-      // If using mock data, just simulate the action
+      // If using mock data, use the mock data manager
       if (useMockData || orderId.startsWith('mock_')) {
-        console.log('Simulating status update for demo purposes');
-        toast({
-          title: "Demo Mode",
-          description: "Order status updated successfully (demo)",
-        });
+        console.log('Using mock data manager to update order status');
+        const success = mockDataManager.updateOrderStatus(orderId, newStatus);
         
-        // Simulate a delay and refresh
-        setTimeout(() => {
-          fetchActiveOrders();
-        }, 500);
-        
-        return true;
+        if (success) {
+          toast({
+            title: "Demo Mode",
+            description: "Order status updated successfully (demo)",
+          });
+          
+          await fetchActiveOrders();
+          return true;
+        } else {
+          throw new Error('Order not found');
+        }
       }
       
       const validStatuses: UnifiedOrderStatus[] = [
