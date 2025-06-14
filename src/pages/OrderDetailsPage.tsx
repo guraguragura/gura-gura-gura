@@ -7,6 +7,7 @@ import { CustomerSection } from '@/components/driver/order-details/CustomerSecti
 import { StatusTimeline } from '@/components/driver/order-details/StatusTimeline';
 import { OrderActions } from '@/components/driver/order-details/OrderActions';
 import { LoadingSpinner } from '@/components/driver/order-details/LoadingSpinner';
+import type { UnifiedOrderStatus } from '@/hooks/useDriverOrders';
 
 const OrderDetailsPage = () => {
   const { orderId } = useParams();
@@ -34,7 +35,7 @@ const OrderDetailsPage = () => {
     );
   }
 
-  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+  const handleStatusUpdate = async (orderId: string, newStatus: UnifiedOrderStatus) => {
     await updateOrderStatus(orderId, newStatus);
   };
 

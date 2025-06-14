@@ -6,18 +6,18 @@ import { Check, Truck, MapPin } from 'lucide-react';
 import { DeliveryConfirmationModal } from '@/components/driver/delivery-confirmation/DeliveryConfirmationModal';
 import { deliveryVerificationService } from '@/services/deliveryVerificationService';
 import { useToast } from '@/hooks/use-toast';
-import type { DriverOrder } from '@/hooks/useDriverOrders';
+import type { DriverOrder, UnifiedOrderStatus } from '@/hooks/useDriverOrders';
 
 interface OrderActionsProps {
   order: DriverOrder;
-  onStatusUpdate: (orderId: string, newStatus: string) => Promise<void>;
+  onStatusUpdate: (orderId: string, newStatus: UnifiedOrderStatus) => Promise<void>;
 }
 
 export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdate }) => {
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const { toast } = useToast();
 
-  const handleStatusUpdate = (newStatus: string) => {
+  const handleStatusUpdate = (newStatus: UnifiedOrderStatus) => {
     onStatusUpdate(order.id, newStatus);
   };
 
@@ -66,7 +66,7 @@ export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdat
         return [
           {
             label: 'Mark as Picked Up',
-            status: 'picked_up',
+            status: 'picked_up' as UnifiedOrderStatus,
             icon: Check,
             variant: 'default' as const,
             className: 'bg-[#84D1D3] hover:bg-[#6bb6b9]',
@@ -77,7 +77,7 @@ export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdat
         return [
           {
             label: 'Start Delivery',
-            status: 'out_for_delivery',
+            status: 'out_for_delivery' as UnifiedOrderStatus,
             icon: Truck,
             variant: 'default' as const,
             className: 'bg-yellow-600 hover:bg-yellow-700',
@@ -88,7 +88,7 @@ export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdat
         return [
           {
             label: 'Confirm Delivery',
-            status: 'delivered',
+            status: 'delivered' as UnifiedOrderStatus,
             icon: MapPin,
             variant: 'default' as const,
             className: 'bg-green-600 hover:bg-green-700',

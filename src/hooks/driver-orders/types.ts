@@ -13,7 +13,7 @@ export interface DriverOrder {
   total_amount: string;
   estimated_delivery_time: string;
   distance: string;
-  unified_status: string;
+  unified_status: UnifiedOrderStatus;
   created_at: string;
 }
 
