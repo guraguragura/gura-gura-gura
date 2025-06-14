@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useOrderFetching } from './driver-orders/useOrderFetching';
 import { useOrderActions } from './driver-orders/useOrderActions';
 import { useRealtimeUpdates } from './driver-orders/useRealtimeUpdates';
@@ -23,6 +23,11 @@ export const useDriverOrders = () => {
 
   useRealtimeUpdates(fetchAvailableOrders);
 
+  const refreshOrders = useCallback(() => 
+    Promise.all([fetchAvailableOrders(), fetchActiveOrders()]), 
+    [fetchAvailableOrders, fetchActiveOrders]
+  );
+
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
@@ -34,7 +39,7 @@ export const useDriverOrders = () => {
     };
 
     fetchOrders();
-  }, []);
+  }, [fetchAvailableOrders, fetchActiveOrders, setLoading]);
 
   return {
     availableOrders,
@@ -43,7 +48,7 @@ export const useDriverOrders = () => {
     acceptOrder,
     refuseOrder,
     updateOrderStatus,
-    refreshOrders: () => Promise.all([fetchAvailableOrders(), fetchActiveOrders()]),
+    refreshOrders,
     useMockData
   };
 };

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { DriverOrder } from './types';
@@ -39,7 +39,7 @@ export const useOrderFetching = () => {
     };
   };
 
-  const fetchAvailableOrders = async () => {
+  const fetchAvailableOrders = useCallback(async () => {
     try {
       console.log('Fetching available orders...');
       
@@ -95,9 +95,9 @@ export const useOrderFetching = () => {
         description: "Showing demo orders for demonstration purposes",
       });
     }
-  };
+  }, [toast]);
 
-  const fetchActiveOrders = async () => {
+  const fetchActiveOrders = useCallback(async () => {
     try {
       console.log('Fetching active orders...');
       
@@ -144,7 +144,7 @@ export const useOrderFetching = () => {
       console.log('Falling back to mock data for active orders');
       setActiveOrders([...mockActiveOrders, ...mockCompletedOrders]);
     }
-  };
+  }, []);
 
   return {
     availableOrders,
