@@ -9,39 +9,39 @@ const ComingSoonPage = () => {
   const carouselImages = [
     {
       src: "/lovable-uploads/d5e58add-86a9-491c-b3e2-ca380524e254.png",
-      alt: "Washing Machine"
+      alt: "Delivery Package"
     },
     {
       src: "/lovable-uploads/bfa0e35e-65cd-4463-8936-12bb49a038ed.png",
-      alt: "Yellow Car"
+      alt: "Delivery Vehicle"
     },
     {
       src: "/lovable-uploads/2e970dc1-e8bd-4b6c-badd-cd0e005681e6.png",
-      alt: "Gaming Controller"
+      alt: "Driver Equipment"
     },
     {
       src: "/lovable-uploads/72f88cbc-15c4-4d41-94fe-0de3eb6336a3.png",
-      alt: "Desk Lamp"
+      alt: "Delivery Service"
     },
     {
       src: "/lovable-uploads/e514159f-9955-4ab6-b125-cec4fa80e32c.png",
-      alt: "Yellow Earphones"
+      alt: "Mobile App"
     },
     {
       src: "/lovable-uploads/71a9030d-5d42-4ab2-9094-6e27ccb2f3fe.png",
-      alt: "iPhone and AirPods"
+      alt: "Technology"
     },
     {
       src: "/lovable-uploads/20baac49-7e2c-4aab-beff-16091ed03fa2.png",
-      alt: "Basketball"
+      alt: "Logistics"
     },
     {
       src: "/lovable-uploads/ef568fa7-7d69-42cf-9696-866a4075928b.png",
-      alt: "Fashion Portrait"
+      alt: "Professional Service"
     },
     {
       src: "/lovable-uploads/8273b9c4-c7f0-464d-ba14-b2c91e9c18fc.png",
-      alt: "Tonic Bottle"
+      alt: "Quality Delivery"
     }
   ];
 
@@ -129,11 +129,11 @@ const ComingSoonPage = () => {
           <div className="space-y-6 text-center max-w-sm">
             <div className="space-y-3">
               <h1 className="text-4xl font-bold tracking-tight text-black">
-                Coming Soon!
+                Driver Portal Coming Soon!
               </h1>
               <p className="text-lg leading-relaxed text-gray-600">
-                Get ready to click, shop, and enjoy!<br />
-                Sign up for exclusive offers and deals
+                Join the Gura delivery team!<br />
+                Sign up for updates on driver opportunities
               </p>
             </div>
 
@@ -159,11 +159,11 @@ const ComingSoonPage = () => {
             
             <div className="space-y-2 md:space-y-4">
               <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-black">
-                Coming Soon!
+                Driver Portal Coming Soon!
               </h1>
               <p className="text-base sm:text-lg md:text-xl leading-relaxed text-gray-600">
-                Get ready to click, shop, and enjoy!<br />
-                Sign up for exclusive offers and deals
+                Join the Gura delivery team!<br />
+                Sign up for updates on driver opportunities
               </p>
             </div>
 

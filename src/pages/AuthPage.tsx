@@ -21,7 +21,7 @@ const AuthPage = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/account/personal-info');
+      navigate('/dashboard');
     }
     
     // Prevent scrolling on login page
@@ -48,10 +48,10 @@ const AuthPage = () => {
             className="h-8 w-auto mb-2"
           />
           <h2 className="text-xl font-bold text-white mb-1 text-center">
-            Shop smart, shop fast,
+            Gura Driver Portal
           </h2>
-          <h2 className="text-xl font-bold text-white text-center">
-            shop Gura.
+          <h2 className="text-lg font-medium text-white text-center">
+            Deliver with Gura
           </h2>
         </div>
       )}
@@ -74,7 +74,7 @@ const AuthPage = () => {
               <>
                 <LoginForm error={error} setError={setError} />
                 <div className="mt-6 text-center text-sm">
-                  Don't have an account? <Link to="/auth?mode=signup" className="text-blue-500 hover:underline">Create now</Link>
+                  Don't have a driver account? <Link to="/auth?mode=signup" className="text-blue-500 hover:underline">Apply now</Link>
                 </div>
                 <SocialLogin isLoading={isLoading} />
               </>
@@ -82,7 +82,7 @@ const AuthPage = () => {
               <>
                 <SignupForm error={error} setError={setError} />
                 <div className="mt-6 text-center text-sm">
-                  Already have an account? <Link to="/auth" className="text-blue-500 hover:underline">Sign in</Link>
+                  Already have a driver account? <Link to="/auth" className="text-blue-500 hover:underline">Sign in</Link>
                 </div>
                 <SocialLogin isLoading={isLoading} />
               </>
@@ -94,15 +94,15 @@ const AuthPage = () => {
         <div className="hidden md:block md:w-1/2 bg-[#84D1D3] relative overflow-hidden">
           <div className="absolute top-16 left-10 z-10">
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-2 lg:mb-4">
-              Shop smart, shop fast,
+              Gura Driver Portal
             </h2>
-            <h2 className="text-3xl lg:text-4xl font-bold text-white">
-              shop Gura.
+            <h2 className="text-2xl lg:text-3xl font-medium text-white">
+              Deliver with Gura
             </h2>
           </div>
           <img 
             src="/lovable-uploads/d6bdd8f8-3811-4b4e-8c28-1c6334fb88a1.png" 
-            alt="Happy shopper" 
+            alt="Driver with delivery" 
             className="absolute inset-0 w-full h-full object-contain object-center"
           />
         </div>

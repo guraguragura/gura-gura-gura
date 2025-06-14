@@ -1116,6 +1116,57 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_profiles: {
+        Row: {
+          created_at: string
+          current_location: Json | null
+          driver_license: string | null
+          email: string | null
+          first_name: string
+          id: string
+          is_active: boolean | null
+          is_available: boolean | null
+          last_name: string
+          metadata: Json | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+          vehicle_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_location?: Json | null
+          driver_license?: string | null
+          email?: string | null
+          first_name: string
+          id?: string
+          is_active?: boolean | null
+          is_available?: boolean | null
+          last_name: string
+          metadata?: Json | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+          vehicle_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_location?: Json | null
+          driver_license?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          is_active?: boolean | null
+          is_available?: boolean | null
+          last_name?: string
+          metadata?: Json | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+          vehicle_type?: string | null
+        }
+        Relationships: []
+      }
       fulfillment: {
         Row: {
           canceled_at: string | null
@@ -1873,62 +1924,110 @@ export type Database = {
       }
       order: {
         Row: {
+          assigned_at: string | null
           billing_address_id: string | null
           canceled_at: string | null
+          cancelled_at: string | null
           created_at: string
           currency_code: string
           customer_id: string | null
           deleted_at: string | null
+          delivered_at: string | null
+          delivery_status:
+            | Database["public"]["Enums"]["delivery_status_enum"]
+            | null
           display_id: number | null
+          driver_id: string | null
           email: string | null
+          failed_delivery_at: string | null
           id: string
           is_draft_order: boolean
           metadata: Json | null
           no_notification: boolean | null
+          paid_at: string | null
+          picked_up_at: string | null
+          processing_started_at: string | null
+          ready_for_pickup_at: string | null
+          refunded_at: string | null
           region_id: string | null
           sales_channel_id: string | null
           shipping_address_id: string | null
           status: Database["public"]["Enums"]["order_status_enum"]
+          unified_status:
+            | Database["public"]["Enums"]["unified_order_status_enum"]
+            | null
           updated_at: string
           version: number
         }
         Insert: {
+          assigned_at?: string | null
           billing_address_id?: string | null
           canceled_at?: string | null
+          cancelled_at?: string | null
           created_at?: string
           currency_code: string
           customer_id?: string | null
           deleted_at?: string | null
+          delivered_at?: string | null
+          delivery_status?:
+            | Database["public"]["Enums"]["delivery_status_enum"]
+            | null
           display_id?: number | null
+          driver_id?: string | null
           email?: string | null
+          failed_delivery_at?: string | null
           id: string
           is_draft_order?: boolean
           metadata?: Json | null
           no_notification?: boolean | null
+          paid_at?: string | null
+          picked_up_at?: string | null
+          processing_started_at?: string | null
+          ready_for_pickup_at?: string | null
+          refunded_at?: string | null
           region_id?: string | null
           sales_channel_id?: string | null
           shipping_address_id?: string | null
           status?: Database["public"]["Enums"]["order_status_enum"]
+          unified_status?:
+            | Database["public"]["Enums"]["unified_order_status_enum"]
+            | null
           updated_at?: string
           version?: number
         }
         Update: {
+          assigned_at?: string | null
           billing_address_id?: string | null
           canceled_at?: string | null
+          cancelled_at?: string | null
           created_at?: string
           currency_code?: string
           customer_id?: string | null
           deleted_at?: string | null
+          delivered_at?: string | null
+          delivery_status?:
+            | Database["public"]["Enums"]["delivery_status_enum"]
+            | null
           display_id?: number | null
+          driver_id?: string | null
           email?: string | null
+          failed_delivery_at?: string | null
           id?: string
           is_draft_order?: boolean
           metadata?: Json | null
           no_notification?: boolean | null
+          paid_at?: string | null
+          picked_up_at?: string | null
+          processing_started_at?: string | null
+          ready_for_pickup_at?: string | null
+          refunded_at?: string | null
           region_id?: string | null
           sales_channel_id?: string | null
           shipping_address_id?: string | null
           status?: Database["public"]["Enums"]["order_status_enum"]
+          unified_status?:
+            | Database["public"]["Enums"]["unified_order_status_enum"]
+            | null
           updated_at?: string
           version?: number
         }
@@ -1938,6 +2037,13 @@ export type Database = {
             columns: ["billing_address_id"]
             isOneToOne: false
             referencedRelation: "order_address"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -5847,6 +5953,15 @@ export type Database = {
         | "wrong_item"
         | "production_failure"
         | "other"
+      delivery_status_enum:
+        | "pending"
+        | "confirmed"
+        | "ready_for_pickup"
+        | "assigned_to_driver"
+        | "picked_up"
+        | "out_for_delivery"
+        | "delivered"
+        | "cancelled"
       order_claim_type_enum: "refund" | "replace"
       order_status_enum:
         | "pending"
@@ -5861,6 +5976,18 @@ export type Database = {
         | "received"
         | "partially_received"
         | "canceled"
+      unified_order_status_enum:
+        | "pending_payment"
+        | "paid"
+        | "processing"
+        | "ready_for_pickup"
+        | "assigned_to_driver"
+        | "picked_up"
+        | "out_for_delivery"
+        | "delivered"
+        | "failed_delivery"
+        | "cancelled"
+        | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -5982,6 +6109,16 @@ export const Constants = {
         "production_failure",
         "other",
       ],
+      delivery_status_enum: [
+        "pending",
+        "confirmed",
+        "ready_for_pickup",
+        "assigned_to_driver",
+        "picked_up",
+        "out_for_delivery",
+        "delivered",
+        "cancelled",
+      ],
       order_claim_type_enum: ["refund", "replace"],
       order_status_enum: [
         "pending",
@@ -5997,6 +6134,19 @@ export const Constants = {
         "received",
         "partially_received",
         "canceled",
+      ],
+      unified_order_status_enum: [
+        "pending_payment",
+        "paid",
+        "processing",
+        "ready_for_pickup",
+        "assigned_to_driver",
+        "picked_up",
+        "out_for_delivery",
+        "delivered",
+        "failed_delivery",
+        "cancelled",
+        "refunded",
       ],
     },
   },
