@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { User, Mail, Phone } from 'lucide-react';
+import { User, Phone, Mail } from 'lucide-react';
 
 type BasicInfoFieldsProps = {
   firstName: string;
@@ -25,89 +24,90 @@ const BasicInfoFields: React.FC<BasicInfoFieldsProps> = ({
   setLastName,
   setEmail,
   setPhone,
-  signupMethod,
+  signupMethod
 }) => {
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="firstName">First Name</Label>
+        <div className="space-y-1 md:space-y-2">
+          <label htmlFor="first-name" className="block text-xs md:text-sm font-medium text-gray-700">
+            First Name*
+          </label>
           <div className="relative">
-            <span className="absolute left-3 top-3 text-gray-400">
-              <User className="h-4 w-4" />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <User className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </span>
-            <Input 
-              id="firstName" 
-              placeholder="John" 
+            <Input
+              id="first-name"
+              type="text"
+              placeholder="First name"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="pl-10"
+              className="pl-8 md:pl-10 text-xs md:text-sm h-9 md:h-10"
               required
             />
           </div>
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="lastName">Last Name</Label>
+
+        <div className="space-y-1 md:space-y-2">
+          <label htmlFor="last-name" className="block text-xs md:text-sm font-medium text-gray-700">
+            Last Name*
+          </label>
           <div className="relative">
-            <span className="absolute left-3 top-3 text-gray-400">
-              <User className="h-4 w-4" />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <User className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </span>
-            <Input 
-              id="lastName" 
-              placeholder="Doe" 
+            <Input
+              id="last-name"
+              type="text"
+              placeholder="Last name"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              className="pl-10"
+              className="pl-8 md:pl-10 text-xs md:text-sm h-9 md:h-10"
               required
             />
           </div>
         </div>
       </div>
 
-      {signupMethod === 'email' && (
-        <div className="space-y-1 md:space-y-2">
-          <label htmlFor="email" className="block text-xs md:text-sm font-medium text-gray-700">
-            Email*
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Mail className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            </span>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-8 md:pl-10 text-xs md:text-sm h-9 md:h-10"
-              required={signupMethod === 'email'}
-            />
-          </div>
+      <div className="space-y-1 md:space-y-2">
+        <label htmlFor="phone" className="block text-xs md:text-sm font-medium text-gray-700">
+          Phone Number*
+        </label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
+          </span>
+          <Input
+            id="phone"
+            type="tel"
+            placeholder="+250 XXX XXX XXX"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="pl-8 md:pl-10 text-xs md:text-sm h-9 md:h-10"
+            required
+          />
         </div>
-      )}
+      </div>
 
-      {signupMethod === 'phone' && (
-        <div className="space-y-1 md:space-y-2">
-          <label htmlFor="phone" className="block text-xs md:text-sm font-medium text-gray-700">
-            Phone Number*
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            </span>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="+1234567890"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="pl-8 md:pl-10 text-xs md:text-sm h-9 md:h-10"
-              required={signupMethod === 'phone'}
-            />
-          </div>
+      <div className="space-y-1 md:space-y-2">
+        <label htmlFor="email" className="block text-xs md:text-sm font-medium text-gray-700">
+          Email Address (Optional)
+        </label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <Mail className="h-3.5 w-3.5 md:h-4 md:w-4" />
+          </span>
+          <Input
+            id="email"
+            type="email"
+            placeholder="name@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="pl-8 md:pl-10 text-xs md:text-sm h-9 md:h-10"
+          />
         </div>
-      )}
+      </div>
     </>
   );
 };

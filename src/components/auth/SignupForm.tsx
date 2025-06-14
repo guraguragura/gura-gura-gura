@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import BasicInfoFields from './BasicInfoFields';
 import TermsCheckbox from './TermsCheckbox';
@@ -45,10 +44,9 @@ const SignupForm = ({ error, setError }: SignupFormProps) => {
         country: formState.country,
       };
 
-      // For now, we're using signUpWithEmail with both methods as Supabase doesn't
-      // have a separate signUpWithPhone method - we'd need to customize this
+      // Use phone number as the primary identifier for drivers
       const result = await signUpWithEmail(
-        formState.signupMethod === 'email' ? formState.email : formState.phone,
+        formState.phone, // Use phone as the email field for now
         formState.password,
         formState.firstName,
         formState.lastName,
@@ -58,7 +56,7 @@ const SignupForm = ({ error, setError }: SignupFormProps) => {
       if (result.error) {
         setError(result.error.message || 'An error occurred during signup');
       } else {
-        navigate('/account/personal-info');
+        navigate('/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred');
@@ -70,9 +68,9 @@ const SignupForm = ({ error, setError }: SignupFormProps) => {
   return (
     <div className="w-full max-w-md">
       <div className="mb-6 md:mb-8">
-        <h1 className="text-xl md:text-2xl font-semibold mb-1">Create Account</h1>
+        <h1 className="text-xl md:text-2xl font-semibold mb-1">Apply to Drive</h1>
         <p className="text-xs md:text-sm text-gray-600">
-          Join Gura to shop your favorite products
+          Start your journey as a Gura driver
         </p>
       </div>
 
@@ -82,61 +80,50 @@ const SignupForm = ({ error, setError }: SignupFormProps) => {
         </div>
       )}
 
-      <Tabs 
-        defaultValue="email" 
-        className="mb-4"
-        onValueChange={(value) => updateField('signupMethod', value as 'email' | 'phone')}
-      >
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="email">Email</TabsTrigger>
-          <TabsTrigger value="phone">Phone</TabsTrigger>
-        </TabsList>
+      <form onSubmit={handleSignup} className="space-y-4">
+        <BasicInfoFields 
+          firstName={formState.firstName}
+          lastName={formState.lastName}
+          email={formState.email}
+          phone={formState.phone}
+          setFirstName={(value) => updateField('firstName', value)}
+          setLastName={(value) => updateField('lastName', value)}
+          setEmail={(value) => updateField('email', value)}
+          setPhone={(value) => updateField('phone', value)}
+          signupMethod="phone"
+        />
 
-        <form onSubmit={handleSignup} className="space-y-4 mt-4">
-          <BasicInfoFields 
-            firstName={formState.firstName}
-            lastName={formState.lastName}
-            email={formState.email}
-            phone={formState.phone}
-            setFirstName={(value) => updateField('firstName', value)}
-            setLastName={(value) => updateField('lastName', value)}
-            setEmail={(value) => updateField('email', value)}
-            setPhone={(value) => updateField('phone', value)}
-            signupMethod={formState.signupMethod}
-          />
+        <PasswordFields
+          password={formState.password}
+          confirmPassword={formState.confirmPassword}
+          setPassword={(value) => updateField('password', value)}
+          setConfirmPassword={(value) => updateField('confirmPassword', value)}
+        />
 
-          <PasswordFields
-            password={formState.password}
-            confirmPassword={formState.confirmPassword}
-            setPassword={(value) => updateField('password', value)}
-            setConfirmPassword={(value) => updateField('confirmPassword', value)}
-          />
+        <AddressFields
+          address={formState.address}
+          city={formState.city}
+          state={formState.state}
+          zipCode={formState.zipCode}
+          country={formState.country}
+          setAddress={(value) => updateField('address', value)}
+          setCity={(value) => updateField('city', value)}
+          setState={(value) => updateField('state', value)}
+          setZipCode={(value) => updateField('zipCode', value)}
+          setCountry={(value) => updateField('country', value)}
+        />
 
-          <AddressFields
-            address={formState.address}
-            city={formState.city}
-            state={formState.state}
-            zipCode={formState.zipCode}
-            country={formState.country}
-            setAddress={(value) => updateField('address', value)}
-            setCity={(value) => updateField('city', value)}
-            setState={(value) => updateField('state', value)}
-            setZipCode={(value) => updateField('zipCode', value)}
-            setCountry={(value) => updateField('country', value)}
-          />
+        <TermsCheckbox
+          checked={formState.agreeToTerms}
+          onCheckedChange={(checked) => updateField('agreeToTerms', !!checked)}
+        />
 
-          <TermsCheckbox
-            checked={formState.agreeToTerms}
-            onCheckedChange={(checked) => updateField('agreeToTerms', !!checked)}
-          />
-
-          <SubmitButton
-            isLoading={isLoading}
-            label="Create Account"
-            loadingLabel="Creating Account..."
-          />
-        </form>
-      </Tabs>
+        <SubmitButton
+          isLoading={isLoading}
+          label="Submit Application"
+          loadingLabel="Submitting Application..."
+        />
+      </form>
     </div>
   );
 };

@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import LoginForm from '@/components/auth/LoginForm';
 import SignupForm from '@/components/auth/SignupForm';
 import { Link } from 'react-router-dom';
-import SocialLogin from '@/components/auth/SocialLogin';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const AuthPage = () => {
@@ -15,7 +14,6 @@ const AuthPage = () => {
   const [mode, setMode] = useState<'login' | 'signup'>(
     searchParams.get('mode') === 'signup' ? 'signup' : 'login'
   );
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
@@ -76,7 +74,6 @@ const AuthPage = () => {
                 <div className="mt-6 text-center text-sm">
                   Don't have a driver account? <Link to="/auth?mode=signup" className="text-blue-500 hover:underline">Apply now</Link>
                 </div>
-                <SocialLogin isLoading={isLoading} />
               </>
             ) : (
               <>
@@ -84,7 +81,6 @@ const AuthPage = () => {
                 <div className="mt-6 text-center text-sm">
                   Already have a driver account? <Link to="/auth" className="text-blue-500 hover:underline">Sign in</Link>
                 </div>
-                <SocialLogin isLoading={isLoading} />
               </>
             )}
           </div>
