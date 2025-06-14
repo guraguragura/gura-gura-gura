@@ -1937,6 +1937,8 @@ export type Database = {
             | Database["public"]["Enums"]["delivery_status_enum"]
             | null
           display_id: number | null
+          driver_accepted_at: string | null
+          driver_assigned_at: string | null
           driver_id: string | null
           email: string | null
           failed_delivery_at: string | null
@@ -1973,6 +1975,8 @@ export type Database = {
             | Database["public"]["Enums"]["delivery_status_enum"]
             | null
           display_id?: number | null
+          driver_accepted_at?: string | null
+          driver_assigned_at?: string | null
           driver_id?: string | null
           email?: string | null
           failed_delivery_at?: string | null
@@ -2009,6 +2013,8 @@ export type Database = {
             | Database["public"]["Enums"]["delivery_status_enum"]
             | null
           display_id?: number | null
+          driver_accepted_at?: string | null
+          driver_assigned_at?: string | null
           driver_id?: string | null
           email?: string | null
           failed_delivery_at?: string | null
@@ -3158,6 +3164,56 @@ export type Database = {
             columns: ["shipping_method_id"]
             isOneToOne: false
             referencedRelation: "order_shipping_method"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_status_history: {
+        Row: {
+          changed_by: string | null
+          changed_by_type: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          new_status: Database["public"]["Enums"]["unified_order_status_enum"]
+          notes: string | null
+          order_id: string
+          previous_status:
+            | Database["public"]["Enums"]["unified_order_status_enum"]
+            | null
+        }
+        Insert: {
+          changed_by?: string | null
+          changed_by_type?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_status: Database["public"]["Enums"]["unified_order_status_enum"]
+          notes?: string | null
+          order_id: string
+          previous_status?:
+            | Database["public"]["Enums"]["unified_order_status_enum"]
+            | null
+        }
+        Update: {
+          changed_by?: string | null
+          changed_by_type?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_status?: Database["public"]["Enums"]["unified_order_status_enum"]
+          notes?: string | null
+          order_id?: string
+          previous_status?:
+            | Database["public"]["Enums"]["unified_order_status_enum"]
+            | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order"
             referencedColumns: ["id"]
           },
         ]
@@ -5921,6 +5977,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_driver_order: {
+        Args: { p_order_id: string; p_driver_id: string }
+        Returns: Json
+      }
       get_products_by_category: {
         Args: { cid: string }
         Returns: {
@@ -5945,6 +6005,10 @@ export type Database = {
           is_sale: boolean
           is_new: boolean
         }[]
+      }
+      refuse_driver_order: {
+        Args: { p_order_id: string; p_driver_id: string; p_reason?: string }
+        Returns: Json
       }
     }
     Enums: {
