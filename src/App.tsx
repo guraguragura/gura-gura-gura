@@ -3,7 +3,6 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
-import ComingSoonPage from "@/pages/ComingSoonPage";
 import AuthPage from "@/pages/AuthPage";
 import DriverDashboard from "@/pages/DriverDashboard";
 import DriverOrders from "@/pages/DriverOrders";
@@ -33,22 +32,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const AppContent = () => {
-  const isDevelopment = import.meta.env.DEV;
-  
-  // If in development, only show coming soon page for now
-  if (isDevelopment) {
-    return (
-      <>
-        <Routes>
-          <Route path="/coming-soon" element={<ComingSoonPage />} />
-          <Route path="*" element={<Navigate to="/coming-soon" replace />} />
-        </Routes>
-        <Toaster />
-      </>
-    );
-  }
-
-  // Driver portal routes (production)
   return (
     <>
       <Routes>
@@ -73,9 +56,6 @@ const AppContent = () => {
             <DriverProfile />
           </ProtectedRoute>
         } />
-        
-        {/* Coming soon page for testing */}
-        <Route path="/coming-soon" element={<ComingSoonPage />} />
         
         {/* Default redirect to dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
