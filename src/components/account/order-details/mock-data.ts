@@ -86,8 +86,8 @@ export const mockOrderDetails: Record<string, OrderDetail> = {
         id: '3',
         name: 'Smart Watch',
         quantity: 1,
-        price: 79.95,
-        subtotal: 79.95,
+        price: 64.95,
+        subtotal: 64.95,
         thumbnail: '/lovable-uploads/189d5b38-0cf3-4a56-9606-2caba74233ca.png'
       }
     ],
@@ -187,8 +187,8 @@ export const mockOrderDetails: Record<string, OrderDetail> = {
         id: '9',
         name: 'Tablet',
         quantity: 1,
-        price: 199.99,
-        subtotal: 199.99,
+        price: 189.99,
+        subtotal: 189.99,
         thumbnail: '/lovable-uploads/5bc8b271-aa7d-4103-8681-58b3e69bf415.png'
       }
     ],
