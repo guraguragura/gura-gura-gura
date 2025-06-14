@@ -2,11 +2,37 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/contexts/AuthContext";
 import ComingSoonPage from "@/pages/ComingSoonPage";
 import AuthPage from "@/pages/AuthPage";
+import DriverDashboard from "@/pages/DriverDashboard";
+import DriverOrders from "@/pages/DriverOrders";
+import DriverProfile from "@/pages/DriverProfile";
+import DriverNavbar from "@/components/layout/DriverNavbar";
+import { useAuth } from "@/contexts/AuthContext";
 
-function App() {
-  // Check if we're in development mode
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="text-lg">Loading...</div>
+    </div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  return (
+    <>
+      <DriverNavbar />
+      {children}
+    </>
+  );
+};
+
+const AppContent = () => {
   const isDevelopment = import.meta.env.DEV;
   
   // If in development, only show coming soon page for now
@@ -29,14 +55,24 @@ function App() {
         {/* Driver authentication */}
         <Route path="/auth" element={<AuthPage />} />
         
-        {/* Driver dashboard - will be implemented */}
-        <Route path="/dashboard" element={<div>Driver Dashboard - Coming Soon</div>} />
+        {/* Protected driver routes */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <DriverDashboard />
+          </ProtectedRoute>
+        } />
         
-        {/* Driver orders - will be implemented */}
-        <Route path="/orders" element={<div>Driver Orders - Coming Soon</div>} />
+        <Route path="/orders" element={
+          <ProtectedRoute>
+            <DriverOrders />
+          </ProtectedRoute>
+        } />
         
-        {/* Driver profile - will be implemented */}
-        <Route path="/profile" element={<div>Driver Profile - Coming Soon</div>} />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <DriverProfile />
+          </ProtectedRoute>
+        } />
         
         {/* Coming soon page for testing */}
         <Route path="/coming-soon" element={<ComingSoonPage />} />
@@ -49,6 +85,14 @@ function App() {
       </Routes>
       <Toaster />
     </>
+  );
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
