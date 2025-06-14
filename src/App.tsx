@@ -35,7 +35,7 @@ const AppContent = () => {
   return (
     <>
       <Routes>
-        {/* Driver authentication */}
+        {/* Driver authentication - login only */}
         <Route path="/auth" element={<AuthPage />} />
         
         {/* Protected driver routes */}

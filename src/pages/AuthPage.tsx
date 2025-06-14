@@ -1,19 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import LoginForm from '@/components/auth/LoginForm';
-import SignupForm from '@/components/auth/SignupForm';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const [mode, setMode] = useState<'login' | 'signup'>(
-    searchParams.get('mode') === 'signup' ? 'signup' : 'login'
-  );
   const [error, setError] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
@@ -29,11 +24,6 @@ const AuthPage = () => {
       document.body.style.overflow = 'auto';
     };
   }, [user, navigate]);
-
-  // Update mode if search param changes
-  useEffect(() => {
-    setMode(searchParams.get('mode') === 'signup' ? 'signup' : 'login');
-  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -68,21 +58,7 @@ const AuthPage = () => {
               </Link>
             )}
             
-            {mode === 'login' ? (
-              <>
-                <LoginForm error={error} setError={setError} />
-                <div className="mt-6 text-center text-sm">
-                  Don't have a driver account? <Link to="/auth?mode=signup" className="text-blue-500 hover:underline">Apply now</Link>
-                </div>
-              </>
-            ) : (
-              <>
-                <SignupForm error={error} setError={setError} />
-                <div className="mt-6 text-center text-sm">
-                  Already have a driver account? <Link to="/auth" className="text-blue-500 hover:underline">Sign in</Link>
-                </div>
-              </>
-            )}
+            <LoginForm error={error} setError={setError} />
           </div>
         </div>
         
