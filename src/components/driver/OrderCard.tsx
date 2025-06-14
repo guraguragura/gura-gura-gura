@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,8 @@ interface OrderCardProps {
 }
 
 const OrderCard = ({ order, onStatusUpdate, showActions = false, showRating = false }: OrderCardProps) => {
+  const navigate = useNavigate();
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'assigned_to_driver':
@@ -33,6 +36,10 @@ const OrderCard = ({ order, onStatusUpdate, showActions = false, showRating = fa
     if (onStatusUpdate) {
       onStatusUpdate(order.id, newStatus);
     }
+  };
+
+  const handleViewDetails = () => {
+    navigate(`/orders/${order.id}`);
   };
 
   return (
@@ -110,7 +117,7 @@ const OrderCard = ({ order, onStatusUpdate, showActions = false, showRating = fa
                   Mark Delivered
                 </Button>
               )}
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleViewDetails}>
                 View Details
               </Button>
             </div>
@@ -131,8 +138,16 @@ const OrderCard = ({ order, onStatusUpdate, showActions = false, showRating = fa
                   ))}
                 </div>
               </div>
-              <Button variant="outline" size="sm">
-                View Receipt
+              <Button variant="outline" size="sm" onClick={handleViewDetails}>
+                View Details
+              </Button>
+            </div>
+          )}
+
+          {!showActions && !showRating && (
+            <div className="pt-2">
+              <Button variant="outline" size="sm" onClick={handleViewDetails} className="w-full">
+                View Details
               </Button>
             </div>
           )}

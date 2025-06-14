@@ -7,6 +7,7 @@ import AuthPage from "@/pages/AuthPage";
 import DriverDashboard from "@/pages/DriverDashboard";
 import DriverOrders from "@/pages/DriverOrders";
 import DriverProfile from "@/pages/DriverProfile";
+import OrderDetailsPage from "@/pages/OrderDetailsPage";
 import DriverNavbar from "@/components/layout/DriverNavbar";
 
 const AppContent = () => {
@@ -28,6 +29,13 @@ const AppContent = () => {
           <>
             <DriverNavbar />
             <DriverOrders />
+          </>
+        } />
+        
+        <Route path="/orders/:orderId" element={
+          <>
+            <DriverNavbar />
+            <OrderDetailsPage />
           </>
         } />
         
