@@ -8,28 +8,6 @@ import DriverDashboard from "@/pages/DriverDashboard";
 import DriverOrders from "@/pages/DriverOrders";
 import DriverProfile from "@/pages/DriverProfile";
 import DriverNavbar from "@/components/layout/DriverNavbar";
-import { useAuth } from "@/contexts/AuthContext";
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="text-lg">Loading...</div>
-    </div>;
-  }
-  
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  return (
-    <>
-      <DriverNavbar />
-      {children}
-    </>
-  );
-};
 
 const AppContent = () => {
   return (
@@ -38,7 +16,7 @@ const AppContent = () => {
         {/* Driver authentication - login only */}
         <Route path="/auth" element={<AuthPage />} />
         
-        {/* Public driver routes */}
+        {/* Driver routes with navbar */}
         <Route path="/dashboard" element={
           <>
             <DriverNavbar />

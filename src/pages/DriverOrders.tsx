@@ -3,11 +3,14 @@ import React, { useState } from 'react';
 import { useDriverOrders } from '@/hooks/useDriverOrders';
 import OrderTabs from '@/components/driver/OrderTabs';
 import TestDataHelper from '@/components/driver/TestDataHelper';
+import TestDriverAuth from '@/components/driver/TestDriverAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Database } from '@/integrations/supabase/types';
 
 type UnifiedOrderStatus = Database["public"]["Enums"]["unified_order_status_enum"];
 
 const DriverOrders = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('active');
   const { 
     activeOrders, 
@@ -21,6 +24,22 @@ const DriverOrders = () => {
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     await updateOrderStatus(orderId, newStatus as UnifiedOrderStatus);
   };
+
+  // Show test authentication helper if no user is signed in
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+            <p className="text-gray-600 mt-2">Sign in to access your orders</p>
+          </div>
+
+          <TestDriverAuth />
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -38,6 +57,7 @@ const DriverOrders = () => {
           <p className="text-gray-600 mt-2">Manage your delivery assignments</p>
         </div>
 
+        <TestDriverAuth />
         <TestDataHelper />
 
         <OrderTabs 
