@@ -1,16 +1,37 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { UnifiedOrderStatus, RpcResult } from './types';
+import type { UnifiedOrderStatus } from './types';
 
-export const useOrderActions = (fetchAvailableOrders: () => Promise<void>, fetchActiveOrders: () => Promise<void>) => {
+export const useOrderActions = (
+  fetchAvailableOrders: () => Promise<void>, 
+  fetchActiveOrders: () => Promise<void>,
+  useMockData?: boolean
+) => {
   const { toast } = useToast();
 
   const acceptOrder = async (orderId: string) => {
     try {
       console.log('Accepting order:', orderId);
       
-      // For demo purposes, we'll simulate accepting the order by updating it directly
+      // If using mock data, just simulate the action
+      if (useMockData || orderId.startsWith('mock_')) {
+        console.log('Simulating order acceptance for demo purposes');
+        toast({
+          title: "Demo Mode",
+          description: "Order accepted successfully (demo)",
+        });
+        
+        // Simulate a delay and refresh
+        setTimeout(() => {
+          fetchAvailableOrders();
+          fetchActiveOrders();
+        }, 500);
+        
+        return true;
+      }
+      
+      // For real orders, update the database
       const { error } = await supabase
         .from('order')
         .update({ 
@@ -47,6 +68,17 @@ export const useOrderActions = (fetchAvailableOrders: () => Promise<void>, fetch
     try {
       console.log('Refusing order:', orderId);
       
+      // If using mock data, just simulate the action
+      if (useMockData || orderId.startsWith('mock_')) {
+        console.log('Simulating order refusal for demo purposes');
+        toast({
+          title: "Demo Mode",
+          description: "Order refusal recorded (demo)",
+        });
+        
+        return true;
+      }
+      
       toast({
         title: "Order Refused",
         description: "Order refusal has been recorded",
@@ -68,6 +100,22 @@ export const useOrderActions = (fetchAvailableOrders: () => Promise<void>, fetch
   const updateOrderStatus = async (orderId: string, newStatus: UnifiedOrderStatus) => {
     try {
       console.log('Updating order status:', orderId, 'to:', newStatus);
+      
+      // If using mock data, just simulate the action
+      if (useMockData || orderId.startsWith('mock_')) {
+        console.log('Simulating status update for demo purposes');
+        toast({
+          title: "Demo Mode",
+          description: "Order status updated successfully (demo)",
+        });
+        
+        // Simulate a delay and refresh
+        setTimeout(() => {
+          fetchActiveOrders();
+        }, 500);
+        
+        return true;
+      }
       
       const validStatuses: UnifiedOrderStatus[] = [
         'ready_for_pickup', 'assigned_to_driver', 'picked_up', 

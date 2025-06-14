@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { DriverOrder } from './types';
+import { mockAvailableOrders, mockActiveOrders, mockCompletedOrders } from '@/data/mockDriverOrders';
 
 export const useOrderFetching = () => {
   const [availableOrders, setAvailableOrders] = useState<DriverOrder[]>([]);
   const [activeOrders, setActiveOrders] = useState<DriverOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [useMockData, setUseMockData] = useState(false);
   const { toast } = useToast();
 
   const formatOrder = (order: any): DriverOrder => {
@@ -72,14 +74,25 @@ export const useOrderFetching = () => {
       }
 
       console.log('Available orders data:', orders);
-      const formattedOrders: DriverOrder[] = (orders || []).map(formatOrder);
-      setAvailableOrders(formattedOrders);
+      
+      if (!orders || orders.length === 0) {
+        console.log('No real orders found, using mock data for available orders');
+        setAvailableOrders(mockAvailableOrders);
+        setUseMockData(true);
+      } else {
+        const formattedOrders: DriverOrder[] = orders.map(formatOrder);
+        setAvailableOrders(formattedOrders);
+        setUseMockData(false);
+      }
     } catch (error) {
       console.error('Error fetching available orders:', error);
+      console.log('Falling back to mock data for available orders');
+      setAvailableOrders(mockAvailableOrders);
+      setUseMockData(true);
+      
       toast({
-        title: "Error",
-        description: "Failed to fetch available orders",
-        variant: "destructive"
+        title: "Using Demo Data",
+        description: "Showing demo orders for demonstration purposes",
       });
     }
   };
@@ -88,7 +101,6 @@ export const useOrderFetching = () => {
     try {
       console.log('Fetching active orders...');
       
-      // Fetch all orders that are assigned to any driver or in delivery states
       const { data: orders, error } = await supabase
         .from('order')
         .select(`
@@ -119,15 +131,18 @@ export const useOrderFetching = () => {
       }
 
       console.log('Active orders data:', orders);
-      const formattedOrders: DriverOrder[] = (orders || []).map(formatOrder);
-      setActiveOrders(formattedOrders);
+      
+      if (!orders || orders.length === 0) {
+        console.log('No real active orders found, using mock data');
+        setActiveOrders([...mockActiveOrders, ...mockCompletedOrders]);
+      } else {
+        const formattedOrders: DriverOrder[] = orders.map(formatOrder);
+        setActiveOrders(formattedOrders);
+      }
     } catch (error) {
       console.error('Error fetching active orders:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch active orders",
-        variant: "destructive"
-      });
+      console.log('Falling back to mock data for active orders');
+      setActiveOrders([...mockActiveOrders, ...mockCompletedOrders]);
     }
   };
 
@@ -137,6 +152,7 @@ export const useOrderFetching = () => {
     loading,
     setLoading,
     fetchAvailableOrders,
-    fetchActiveOrders
+    fetchActiveOrders,
+    useMockData
   };
 };

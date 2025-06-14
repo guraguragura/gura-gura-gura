@@ -11,14 +11,15 @@ export const useDriverOrders = () => {
     loading,
     setLoading,
     fetchAvailableOrders,
-    fetchActiveOrders
+    fetchActiveOrders,
+    useMockData
   } = useOrderFetching();
 
   const {
     acceptOrder,
     refuseOrder,
     updateOrderStatus
-  } = useOrderActions(fetchAvailableOrders, fetchActiveOrders);
+  } = useOrderActions(fetchAvailableOrders, fetchActiveOrders, useMockData);
 
   useRealtimeUpdates(fetchAvailableOrders);
 
@@ -42,7 +43,8 @@ export const useDriverOrders = () => {
     acceptOrder,
     refuseOrder,
     updateOrderStatus,
-    refreshOrders: () => Promise.all([fetchAvailableOrders(), fetchActiveOrders()])
+    refreshOrders: () => Promise.all([fetchAvailableOrders(), fetchActiveOrders()]),
+    useMockData
   };
 };
 
