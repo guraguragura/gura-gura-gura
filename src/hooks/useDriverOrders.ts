@@ -1,12 +1,10 @@
 
 import { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useOrderFetching } from './driver-orders/useOrderFetching';
 import { useOrderActions } from './driver-orders/useOrderActions';
 import { useRealtimeUpdates } from './driver-orders/useRealtimeUpdates';
 
 export const useDriverOrders = () => {
-  const { user } = useAuth();
   const {
     availableOrders,
     activeOrders,
@@ -34,10 +32,8 @@ export const useDriverOrders = () => {
       }
     };
 
-    if (user) {
-      fetchOrders();
-    }
-  }, [user]);
+    fetchOrders();
+  }, []);
 
   return {
     availableOrders,

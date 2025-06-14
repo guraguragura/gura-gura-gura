@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import type { DriverOrder } from './types';
 
@@ -9,7 +8,6 @@ export const useOrderFetching = () => {
   const [availableOrders, setAvailableOrders] = useState<DriverOrder[]>([]);
   const [activeOrders, setActiveOrders] = useState<DriverOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const formatOrder = (order: any): DriverOrder => {
@@ -87,11 +85,10 @@ export const useOrderFetching = () => {
   };
 
   const fetchActiveOrders = async () => {
-    if (!user) return;
-
     try {
-      console.log('Fetching active orders for driver:', user.id);
+      console.log('Fetching active orders...');
       
+      // Fetch all orders that are assigned to any driver or in delivery states
       const { data: orders, error } = await supabase
         .from('order')
         .select(`
@@ -113,7 +110,6 @@ export const useOrderFetching = () => {
             phone
           )
         `)
-        .eq('driver_id', user.id)
         .in('unified_status', ['assigned_to_driver', 'picked_up', 'out_for_delivery', 'delivered'])
         .order('created_at', { ascending: false });
 
