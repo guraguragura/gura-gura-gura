@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Truck, Package, MapPin, Phone, Clock, RefreshCw } from 'lucide-react';
 import { useDriverOrders } from '@/hooks/useDriverOrders';
+import type { Database } from '@/integrations/supabase/types';
+
+type UnifiedOrderStatus = Database["public"]["Enums"]["unified_order_status_enum"];
 
 const DriverDashboard = () => {
   const { user } = useAuth();
@@ -56,7 +59,7 @@ const DriverDashboard = () => {
   };
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
-    await updateOrderStatus(orderId, newStatus);
+    await updateOrderStatus(orderId, newStatus as UnifiedOrderStatus);
   };
 
   if (loading) {

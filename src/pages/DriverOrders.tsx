@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, Phone, Package } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDriverOrders } from '@/hooks/useDriverOrders';
+import type { Database } from '@/integrations/supabase/types';
+
+type UnifiedOrderStatus = Database["public"]["Enums"]["unified_order_status_enum"];
 
 const DriverOrders = () => {
   const [activeTab, setActiveTab] = useState('active');
@@ -34,7 +36,7 @@ const DriverOrders = () => {
   };
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
-    await updateOrderStatus(orderId, newStatus);
+    await updateOrderStatus(orderId, newStatus as UnifiedOrderStatus);
   };
 
   if (loading) {
