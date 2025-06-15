@@ -23,7 +23,7 @@ const AppContent = () => {
         {/* Authentication */}
         <Route path="/auth" element={<AuthPage />} />
         
-        {/* Admin Routes - TEMPORARILY UNPROTECTED FOR TESTING */}
+        {/* Admin Routes - TEMPORARILY UNPROTECTED */}
         <Route path="/admin" element={
           <>
             <AdminNavbar />
@@ -45,42 +45,40 @@ const AppContent = () => {
           </>
         } />
         
-        {/* Driver Routes */}
+        {/* Driver Routes - TEMPORARILY UNPROTECTED */}
         <Route path="/dashboard" element={
-          <RoleBasedGuard allowedRoles={['driver']}>
+          <>
             <DriverNavbar />
             <DriverDashboard />
-          </RoleBasedGuard>
+          </>
         } />
         
         <Route path="/orders" element={
-          <RoleBasedGuard allowedRoles={['driver']}>
+          <>
             <DriverNavbar />
             <DriverOrders />
-          </RoleBasedGuard>
+          </>
         } />
         
         <Route path="/orders/:orderId" element={
-          <RoleBasedGuard allowedRoles={['driver']}>
+          <>
             <DriverNavbar />
             <OrderDetailsPage />
-          </RoleBasedGuard>
+          </>
         } />
         
         <Route path="/profile" element={
-          <RoleBasedGuard allowedRoles={['driver']}>
+          <>
             <DriverNavbar />
-            <DriverSetupGuard>
-              <DriverProfile />
-            </DriverSetupGuard>
-          </RoleBasedGuard>
+            <DriverProfile />
+          </>
         } />
         
-        {/* Default redirect based on role */}
-        <Route path="/" element={<Navigate to="/auth" replace />} />
+        {/* Default redirect to driver dashboard for easy testing */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         
         {/* 404 fallback */}
-        <Route path="*" element={<Navigate to="/auth" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
       <Toaster />
     </>
