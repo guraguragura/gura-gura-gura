@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 type AuthContextType = {
   session: Session | null;
@@ -32,11 +33,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
+      async (event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' && newSession?.user) {
+          // Get user role and redirect accordingly
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', newSession.user.id)
+            .single();
+          
+          if (roleData?.role === 'admin') {
+            window.location.href = '/admin';
+          } else if (roleData?.role === 'driver') {
+            window.location.href = '/dashboard';
+          }
+          
           toast.success('Successfully signed in');
         } else if (event === 'SIGNED_OUT') {
           toast.info('Signed out');
@@ -81,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const userData = {
       first_name: firstName,
       last_name: lastName,
+      user_type: 'driver', // Default new signups to driver
       ...(addressData || {})
     };
 
@@ -114,6 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    window.location.href = '/auth';
   };
 
   const value = {
