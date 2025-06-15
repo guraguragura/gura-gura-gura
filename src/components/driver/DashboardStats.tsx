@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Truck, Package, Star, TrendingUp } from 'lucide-react';
+import { Truck, Package, TrendingUp } from 'lucide-react';
 import { useDriverProfile } from '@/hooks/useDriverProfile';
-import { useDriverEarnings } from '@/hooks/useDriverEarnings';
 
 interface DashboardStatsProps {
   availableCount: number;
@@ -12,7 +11,6 @@ interface DashboardStatsProps {
 
 const DashboardStats = ({ availableCount, activeCount }: DashboardStatsProps) => {
   const { driverProfile } = useDriverProfile();
-  const { formattedEarnings } = useDriverEarnings(driverProfile?.id);
 
   const stats = [
     {
@@ -32,17 +30,11 @@ const DashboardStats = ({ availableCount, activeCount }: DashboardStatsProps) =>
       value: (driverProfile?.total_deliveries || 0).toString(),
       icon: TrendingUp,
       description: 'Completed orders'
-    },
-    {
-      title: 'Today\'s Earnings',
-      value: formattedEarnings.today,
-      icon: Star,
-      description: 'From completed deliveries'
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
