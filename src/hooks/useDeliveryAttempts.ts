@@ -25,6 +25,34 @@ export interface DeliveryAttempt {
   failed_reason?: FailedDeliveryReason;
 }
 
+// Type for the raw data from Supabase
+interface RawDeliveryAttempt {
+  id: string;
+  order_id: string;
+  driver_id: string;
+  attempt_number: number;
+  status: string; // This is the raw string from Supabase
+  failed_reason_id?: string;
+  notes?: string;
+  photo_evidence_url?: string;
+  attempted_at: string;
+  rescheduled_for?: string;
+  failed_reason?: FailedDeliveryReason;
+}
+
+// Helper function to safely cast status
+const mapDeliveryAttempt = (raw: RawDeliveryAttempt): DeliveryAttempt => {
+  const validStatuses = ['successful', 'failed', 'rescheduled'] as const;
+  const status = validStatuses.includes(raw.status as any) 
+    ? (raw.status as 'successful' | 'failed' | 'rescheduled')
+    : 'failed'; // fallback to 'failed' if invalid
+
+  return {
+    ...raw,
+    status
+  };
+};
+
 export const useDeliveryAttempts = (orderId: string) => {
   const [attempts, setAttempts] = useState<DeliveryAttempt[]>([]);
   const [failureReasons, setFailureReasons] = useState<FailedDeliveryReason[]>([]);
@@ -69,7 +97,10 @@ export const useDeliveryAttempts = (orderId: string) => {
         .order('attempted_at', { ascending: false });
 
       if (error) throw error;
-      setAttempts(data || []);
+      
+      // Map the raw data to our typed interface
+      const mappedAttempts = (data || []).map(mapDeliveryAttempt);
+      setAttempts(mappedAttempts);
     } catch (error) {
       console.error('Error fetching delivery attempts:', error);
       toast({
