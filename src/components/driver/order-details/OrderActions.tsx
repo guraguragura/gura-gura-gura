@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Truck, MapPin } from 'lucide-react';
+import { Check, Truck, MapPin, AlertTriangle } from 'lucide-react';
 import { DeliveryConfirmationModal } from '@/components/driver/delivery-confirmation/DeliveryConfirmationModal';
+import { FailedDeliveryModal } from '@/components/driver/FailedDeliveryModal';
 import { deliveryVerificationService } from '@/services/deliveryVerificationService';
 import { useToast } from '@/hooks/use-toast';
 import type { DriverOrder, UnifiedOrderStatus } from '@/hooks/useDriverOrders';
@@ -15,6 +16,7 @@ interface OrderActionsProps {
 
 export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdate }) => {
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [showFailedDeliveryModal, setShowFailedDeliveryModal] = useState(false);
   const { toast } = useToast();
 
   const handleStatusUpdate = (newStatus: UnifiedOrderStatus) => {
@@ -93,6 +95,14 @@ export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdat
             variant: 'default' as const,
             className: 'bg-green-600 hover:bg-green-700',
             action: () => setShowDeliveryModal(true)
+          },
+          {
+            label: 'Report Failed Delivery',
+            status: 'failed_delivery' as UnifiedOrderStatus,
+            icon: AlertTriangle,
+            variant: 'destructive' as const,
+            className: 'bg-red-600 hover:bg-red-700',
+            action: () => setShowFailedDeliveryModal(true)
           }
         ];
       default:
@@ -136,6 +146,14 @@ export const OrderActions: React.FC<OrderActionsProps> = ({ order, onStatusUpdat
         isOpen={showDeliveryModal}
         onClose={() => setShowDeliveryModal(false)}
         onConfirm={handleDeliveryConfirmation}
+        customerName={order.customer_name}
+        deliveryAddress={order.delivery_address}
+      />
+
+      <FailedDeliveryModal
+        isOpen={showFailedDeliveryModal}
+        onClose={() => setShowFailedDeliveryModal(false)}
+        orderId={order.id}
         customerName={order.customer_name}
         deliveryAddress={order.delivery_address}
       />

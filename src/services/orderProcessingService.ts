@@ -177,6 +177,16 @@ export class OrderProcessingService {
         };
       }
 
+      // Set failed_delivery_at timestamp for failed deliveries
+      if (newStatus === 'failed_delivery') {
+        updateData.failed_delivery_at = new Date().toISOString();
+      }
+
+      // Clear failed_delivery_at when moving to other statuses from failed_delivery
+      if (newStatus === 'assigned_to_driver' || newStatus === 'picked_up' || newStatus === 'out_for_delivery') {
+        updateData.failed_delivery_at = null;
+      }
+
       const { error } = await supabase
         .from('order')
         .update(updateData)

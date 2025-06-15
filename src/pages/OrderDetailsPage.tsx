@@ -6,6 +6,7 @@ import { OrderDetailsHeader } from '@/components/driver/order-details/OrderDetai
 import { CustomerSection } from '@/components/driver/order-details/CustomerSection';
 import { StatusTimeline } from '@/components/driver/order-details/StatusTimeline';
 import { OrderActions } from '@/components/driver/order-details/OrderActions';
+import { DeliveryAttemptsHistory } from '@/components/driver/DeliveryAttemptsHistory';
 import { LoadingSpinner } from '@/components/driver/order-details/LoadingSpinner';
 import type { UnifiedOrderStatus } from '@/hooks/useDriverOrders';
 
@@ -53,6 +54,8 @@ const OrderDetailsPage = () => {
           order={order} 
           onStatusUpdate={handleStatusUpdate}
         />
+
+        <DeliveryAttemptsHistory orderId={order.id} />
       </div>
     </div>
   );

@@ -1171,6 +1171,73 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_attempts: {
+        Row: {
+          attempt_number: number
+          attempted_at: string
+          created_at: string
+          driver_id: string | null
+          failed_reason_id: string | null
+          id: string
+          notes: string | null
+          order_id: string
+          photo_evidence_url: string | null
+          rescheduled_for: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempt_number?: number
+          attempted_at?: string
+          created_at?: string
+          driver_id?: string | null
+          failed_reason_id?: string | null
+          id?: string
+          notes?: string | null
+          order_id: string
+          photo_evidence_url?: string | null
+          rescheduled_for?: string | null
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          attempt_number?: number
+          attempted_at?: string
+          created_at?: string
+          driver_id?: string | null
+          failed_reason_id?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string
+          photo_evidence_url?: string | null
+          rescheduled_for?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_attempts_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_attempts_failed_reason_id_fkey"
+            columns: ["failed_reason_id"]
+            isOneToOne: false
+            referencedRelation: "failed_delivery_reasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_attempts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_profiles: {
         Row: {
           address: string | null
@@ -1258,6 +1325,30 @@ export type Database = {
           vehicle_type?: string | null
           vehicle_year?: number | null
           years_active?: number | null
+        }
+        Relationships: []
+      }
+      failed_delivery_reasons: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
         }
         Relationships: []
       }
