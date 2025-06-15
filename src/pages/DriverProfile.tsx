@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,14 +7,18 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, Phone, Mail, MapPin, Car, Star, Settings } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useDriverProfile } from '@/hooks/useDriverProfile';
+import { useDriverRatings } from '@/hooks/useDriverRatings';
+import { RatingStats } from '@/components/driver/RatingStats';
 
 const DriverProfile = () => {
   const { user, signOut } = useAuth();
+  const { driverProfile } = useDriverProfile();
+  const { stats: ratingStats, ratings, loading: ratingsLoading } = useDriverRatings(driverProfile?.id);
   const [isEditing, setIsEditing] = useState(false);
 
   const driverStats = {
     totalDeliveries: 1247,
-    rating: 4.8,
     totalEarnings: 'RWF 2,450,000',
     yearsActive: 2
   };
@@ -37,10 +40,11 @@ const DriverProfile = () => {
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="vehicle">Vehicle</TabsTrigger>
             <TabsTrigger value="stats">Statistics</TabsTrigger>
+            <TabsTrigger value="ratings">Ratings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="mt-6">
@@ -64,12 +68,15 @@ const DriverProfile = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold">
-                      {user?.user_metadata?.first_name} {user?.user_metadata?.last_name}
+                      {driverProfile?.first_name} {driverProfile?.last_name}
                     </h3>
                     <p className="text-gray-600">Gura Driver</p>
                     <div className="flex items-center mt-1">
                       <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="ml-1 text-sm">{driverStats.rating} rating</span>
+                      <span className="ml-1 text-sm">
+                        {ratingStats.average_rating ? ratingStats.average_rating.toFixed(1) : 'No ratings yet'} 
+                        {ratingStats.total_ratings > 0 && ` (${ratingStats.total_ratings} ratings)`}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -82,7 +89,7 @@ const DriverProfile = () => {
                       <Label htmlFor="firstName">First Name</Label>
                       <Input
                         id="firstName"
-                        defaultValue={user?.user_metadata?.first_name || ''}
+                        defaultValue={driverProfile?.first_name || ''}
                         disabled={!isEditing}
                       />
                     </div>
@@ -90,7 +97,7 @@ const DriverProfile = () => {
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
-                        defaultValue={user?.user_metadata?.last_name || ''}
+                        defaultValue={driverProfile?.last_name || ''}
                         disabled={!isEditing}
                       />
                     </div>
@@ -98,7 +105,7 @@ const DriverProfile = () => {
                       <Label htmlFor="phone">Phone Number</Label>
                       <Input
                         id="phone"
-                        defaultValue="+250 788 123 456"
+                        defaultValue={driverProfile?.phone || ''}
                         disabled={!isEditing}
                       />
                     </div>
@@ -108,7 +115,7 @@ const DriverProfile = () => {
                       <Label htmlFor="email">Email</Label>
                       <Input
                         id="email"
-                        defaultValue={user?.email || ''}
+                        defaultValue={driverProfile?.email || user?.email || ''}
                         disabled={!isEditing}
                       />
                     </div>
@@ -210,7 +217,9 @@ const DriverProfile = () => {
                     <span>Average Rating:</span>
                     <div className="flex items-center">
                       <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                      <span className="font-semibold">{driverStats.rating}</span>
+                      <span className="font-semibold">
+                        {ratingStats.average_rating ? ratingStats.average_rating.toFixed(1) : 'No ratings'}
+                      </span>
                     </div>
                   </div>
                   <div className="flex justify-between">
@@ -245,6 +254,60 @@ const DriverProfile = () => {
                     <span>Today:</span>
                     <span className="font-semibold">RWF 8,500</span>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="ratings" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <RatingStats
+                averageRating={ratingStats.average_rating}
+                totalRatings={ratingStats.total_ratings}
+                ratingDistribution={ratingStats.rating_distribution}
+                showDetailed
+              />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Reviews</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {ratingsLoading ? (
+                    <p className="text-gray-500">Loading reviews...</p>
+                  ) : ratings.length === 0 ? (
+                    <p className="text-gray-500">No reviews yet</p>
+                  ) : (
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                      {ratings.slice(0, 10).map((rating) => (
+                        <div key={rating.id} className="border-b pb-3 last:border-b-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`h-3 w-3 ${
+                                    star <= rating.rating
+                                      ? 'text-yellow-400 fill-current'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {new Date(rating.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          {rating.comment && (
+                            <p className="text-sm text-gray-700 mb-1">{rating.comment}</p>
+                          )}
+                          <p className="text-xs text-gray-500">
+                            {rating.customer?.first_name} {rating.customer?.last_name}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

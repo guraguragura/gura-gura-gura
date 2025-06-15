@@ -13,6 +13,8 @@ interface DriverProfile {
   email?: string;
   is_active: boolean;
   is_available: boolean;
+  average_rating?: number;
+  total_ratings?: number;
 }
 
 export const useDriverProfile = () => {

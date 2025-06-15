@@ -1077,6 +1077,61 @@ export type Database = {
           },
         ]
       }
+      customer_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          customer_id: string
+          driver_id: string
+          id: string
+          order_id: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          customer_id: string
+          driver_id: string
+          id?: string
+          order_id: string
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          customer_id?: string
+          driver_id?: string
+          id?: string
+          order_id?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_ratings_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_ratings_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_ratings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_return_requests: {
         Row: {
           created_at: string | null
@@ -1118,6 +1173,7 @@ export type Database = {
       }
       driver_profiles: {
         Row: {
+          average_rating: number | null
           created_at: string
           current_location: Json | null
           driver_license: string | null
@@ -1129,11 +1185,13 @@ export type Database = {
           last_name: string
           metadata: Json | null
           phone: string | null
+          total_ratings: number | null
           updated_at: string
           user_id: string
           vehicle_type: string | null
         }
         Insert: {
+          average_rating?: number | null
           created_at?: string
           current_location?: Json | null
           driver_license?: string | null
@@ -1145,11 +1203,13 @@ export type Database = {
           last_name: string
           metadata?: Json | null
           phone?: string | null
+          total_ratings?: number | null
           updated_at?: string
           user_id: string
           vehicle_type?: string | null
         }
         Update: {
+          average_rating?: number | null
           created_at?: string
           current_location?: Json | null
           driver_license?: string | null
@@ -1161,6 +1221,7 @@ export type Database = {
           last_name?: string
           metadata?: Json | null
           phone?: string | null
+          total_ratings?: number | null
           updated_at?: string
           user_id?: string
           vehicle_type?: string | null
@@ -6018,6 +6079,10 @@ export type Database = {
       refuse_driver_order: {
         Args: { p_order_id: string; p_driver_id: string; p_reason?: string }
         Returns: Json
+      }
+      update_driver_rating: {
+        Args: { p_driver_id: string }
+        Returns: undefined
       }
     }
     Enums: {
