@@ -17,6 +17,7 @@ import {
 import { OrderStatus } from '../Orders';
 import { RealTimeOrderStatus } from '@/components/order-tracking/RealTimeOrderStatus';
 import { DetailedOrderTimeline } from '@/components/order-tracking/DetailedOrderTimeline';
+import { ChatWithDriverButton } from '@/components/order-tracking/ChatWithDriverButton';
 import { useOrderRealtime } from '@/hooks/useOrderRealtime';
 
 interface OrderStatusCardProps {
@@ -31,6 +32,7 @@ interface OrderStatusCardProps {
       picked_up_at?: string;
       delivered_at?: string;
     };
+    driver_name?: string;
   };
   currentStepIndex: number;
   isOrderCanceled: boolean;
@@ -42,6 +44,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
   isOrderCanceled 
 }) => {
   const { verificationCode } = useOrderRealtime(order.id);
+  const isDriverAssigned = ['assigned_to_driver', 'picked_up', 'out_for_delivery'].includes(order.unified_status || '');
 
   return (
     <div className="space-y-4">
@@ -50,12 +53,24 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
           <CardTitle>Order Status</CardTitle>
           <CardDescription>Placed on {order.date}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <RealTimeOrderStatus 
             orderId={order.id}
             initialStatus={order.status}
             initialUnifiedStatus={order.unified_status}
           />
+          
+          {/* Chat with Driver Button */}
+          {!isOrderCanceled && isDriverAssigned && (
+            <div className="pt-2">
+              <ChatWithDriverButton
+                orderId={order.id}
+                driverName={order.driver_name}
+                orderStatus={order.unified_status}
+                isDriverAssigned={isDriverAssigned}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
