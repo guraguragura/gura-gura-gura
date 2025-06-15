@@ -2,7 +2,8 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import OrderCard from './OrderCard';
-import { NoCompletedOrders, OrderListSkeleton } from './EmptyStates';
+import { NoCompletedOrders } from './EmptyStates';
+import { OrderListSkeleton } from './LoadingSkeleton';
 import type { DriverOrder } from '@/hooks/useDriverOrders';
 
 interface CompletedOrdersListProps {

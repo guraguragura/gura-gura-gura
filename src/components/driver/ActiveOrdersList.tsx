@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import OrderCard from './OrderCard';
-import { NoActiveOrders, OrderListSkeleton } from './EmptyStates';
+import { NoActiveOrders } from './EmptyStates';
+import { OrderListSkeleton } from './LoadingSkeleton';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import type { DriverOrder } from '@/hooks/useDriverOrders';
 
