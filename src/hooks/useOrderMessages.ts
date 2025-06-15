@@ -17,6 +17,40 @@ export interface OrderMessage {
   updated_at: string;
 }
 
+// Type guard functions to validate and convert data
+const isValidSenderType = (type: string): type is 'customer' | 'driver' => {
+  return type === 'customer' || type === 'driver';
+};
+
+const isValidMessageType = (type: string): type is 'text' | 'system' | 'template' => {
+  return type === 'text' || type === 'system' || type === 'template';
+};
+
+// Convert Supabase data to our typed interface
+const convertToOrderMessage = (data: any): OrderMessage => {
+  if (!isValidSenderType(data.sender_type)) {
+    console.warn('Invalid sender_type:', data.sender_type, 'defaulting to customer');
+    data.sender_type = 'customer';
+  }
+  
+  if (!isValidMessageType(data.message_type)) {
+    console.warn('Invalid message_type:', data.message_type, 'defaulting to text');
+    data.message_type = 'text';
+  }
+
+  return {
+    id: data.id,
+    order_id: data.order_id,
+    sender_type: data.sender_type as 'customer' | 'driver',
+    sender_id: data.sender_id,
+    message: data.message,
+    message_type: data.message_type as 'text' | 'system' | 'template',
+    is_read: data.is_read,
+    created_at: data.created_at,
+    updated_at: data.updated_at
+  };
+};
+
 export const useOrderMessages = (orderId: string) => {
   const [messages, setMessages] = useState<OrderMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +71,10 @@ export const useOrderMessages = (orderId: string) => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setMessages(data || []);
+      
+      // Convert Supabase data to our typed interface
+      const typedMessages = (data || []).map(convertToOrderMessage);
+      setMessages(typedMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({
@@ -123,10 +160,12 @@ export const useOrderMessages = (orderId: string) => {
           console.log('Message update received:', payload);
           
           if (payload.eventType === 'INSERT') {
-            setMessages(prev => [...prev, payload.new as OrderMessage]);
+            const newMessage = convertToOrderMessage(payload.new);
+            setMessages(prev => [...prev, newMessage]);
           } else if (payload.eventType === 'UPDATE') {
+            const updatedMessage = convertToOrderMessage(payload.new);
             setMessages(prev => prev.map(msg => 
-              msg.id === payload.new.id ? payload.new as OrderMessage : msg
+              msg.id === updatedMessage.id ? updatedMessage : msg
             ));
           } else if (payload.eventType === 'DELETE') {
             setMessages(prev => prev.filter(msg => msg.id !== payload.old.id));
