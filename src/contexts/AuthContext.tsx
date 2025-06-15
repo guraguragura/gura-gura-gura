@@ -3,14 +3,12 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
 
 type AuthContextType = {
   session: Session | null;
   user: User | null;
   loading: boolean;
   signInWithEmail: (email: string, password: string) => Promise<{error: any | null}>;
-  signInWithPhone: (phone: string, password: string) => Promise<{error: any | null}>;
   signUpWithEmail: (
     email: string, 
     password: string, 
@@ -76,14 +74,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
-  const signInWithPhone = async (phone: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      phone,
-      password,
-    });
-    return { error };
-  };
-
   const signUpWithEmail = async (
     email: string, 
     password: string, 
@@ -137,7 +127,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     loading,
     signInWithEmail,
-    signInWithPhone,
     signUpWithEmail,
     signInWithGoogle,
     signInWithFacebook,
