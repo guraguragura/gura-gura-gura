@@ -1,9 +1,9 @@
-
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthPage from "@/pages/AuthPage";
+import PlaceOrderPage from "@/pages/PlaceOrderPage";
 import DriverDashboard from "@/pages/DriverDashboard";
 import DriverOrders from "@/pages/DriverOrders";
 import DriverProfile from "@/pages/DriverProfile";
@@ -13,8 +13,6 @@ import DriverManagement from "@/pages/DriverManagement";
 import CreateDriver from "@/pages/CreateDriver";
 import DriverNavbar from "@/components/layout/DriverNavbar";
 import AdminNavbar from "@/components/admin/AdminNavbar";
-import DriverSetupGuard from "@/components/driver/DriverSetupGuard";
-import RoleBasedGuard from "@/components/auth/RoleBasedGuard";
 
 const AppContent = () => {
   return (
