@@ -111,19 +111,6 @@ class OfflineStorageService {
     const lastSync = localStorage.getItem('last_sync_time');
     return lastSync ? new Date(parseInt(lastSync)) : null;
   }
-
-  // Cache statistics
-  getCacheStats(): { availableCount: number; activeCount: number; queuedActions: number } {
-    const available = this.getCachedOrders('available');
-    const active = this.getCachedOrders('active');
-    const queue = this.getActionQueue();
-
-    return {
-      availableCount: available ? available.length : 0,
-      activeCount: active ? active.length : 0,
-      queuedActions: queue.length
-    };
-  }
 }
 
 export const offlineStorage = new OfflineStorageService();
