@@ -9,6 +9,7 @@ import DriverOrders from "@/pages/DriverOrders";
 import DriverProfile from "@/pages/DriverProfile";
 import OrderDetailsPage from "@/pages/OrderDetailsPage";
 import DriverNavbar from "@/components/layout/DriverNavbar";
+import DriverSetupGuard from "@/components/driver/DriverSetupGuard";
 
 const AppContent = () => {
   return (
@@ -42,7 +43,9 @@ const AppContent = () => {
         <Route path="/profile" element={
           <>
             <DriverNavbar />
-            <DriverProfile />
+            <DriverSetupGuard>
+              <DriverProfile />
+            </DriverSetupGuard>
           </>
         } />
         
