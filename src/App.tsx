@@ -23,26 +23,26 @@ const AppContent = () => {
         {/* Authentication */}
         <Route path="/auth" element={<AuthPage />} />
         
-        {/* Admin Routes */}
+        {/* Admin Routes - TEMPORARILY UNPROTECTED FOR TESTING */}
         <Route path="/admin" element={
-          <RoleBasedGuard allowedRoles={['admin']}>
+          <>
             <AdminNavbar />
             <AdminDashboard />
-          </RoleBasedGuard>
+          </>
         } />
         
         <Route path="/admin/drivers" element={
-          <RoleBasedGuard allowedRoles={['admin']}>
+          <>
             <AdminNavbar />
             <DriverManagement />
-          </RoleBasedGuard>
+          </>
         } />
         
         <Route path="/admin/drivers/new" element={
-          <RoleBasedGuard allowedRoles={['admin']}>
+          <>
             <AdminNavbar />
             <CreateDriver />
-          </RoleBasedGuard>
+          </>
         } />
         
         {/* Driver Routes */}
