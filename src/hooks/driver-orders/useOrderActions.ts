@@ -7,7 +7,8 @@ import { mockDataManager } from '@/services/mockDataManager';
 export const useOrderActions = (
   fetchAvailableOrders: () => Promise<void>, 
   fetchActiveOrders: () => Promise<void>,
-  useMockData?: boolean
+  useMockData?: boolean,
+  driverProfile?: any
 ) => {
   const { toast } = useToast();
 
@@ -18,6 +19,11 @@ export const useOrderActions = (
   const acceptOrder = async (orderId: string) => {
     try {
       console.log('Accepting order:', orderId);
+      
+      // Check if driver is authenticated
+      if (!driverProfile) {
+        throw new Error('Driver not authenticated');
+      }
       
       // If using mock data, use the mock data manager
       if (useMockData || orderId.startsWith('mock_')) {
@@ -38,18 +44,24 @@ export const useOrderActions = (
         }
       }
       
-      // For real orders, update the database
+      // For real orders, update the database with driver assignment
       const { error } = await supabase
         .from('order')
         .update({ 
           unified_status: 'assigned_to_driver' as UnifiedOrderStatus,
+          driver_id: driverProfile.id,
           driver_accepted_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
-        .eq('id', orderId);
+        .eq('id', orderId)
+        .eq('unified_status', 'ready_for_pickup')
+        .is('driver_id', null);
 
       if (error) {
         console.error('Update error:', error);
+        if (error.message.includes('policy')) {
+          throw new Error('You are not authorized to accept this order');
+        }
         throw error;
       }
 
@@ -64,7 +76,7 @@ export const useOrderActions = (
       console.error('Error accepting order:', error);
       toast({
         title: "Error",
-        description: "Failed to accept order",
+        description: error instanceof Error ? error.message : "Failed to accept order",
         variant: "destructive"
       });
       return false;
@@ -74,6 +86,11 @@ export const useOrderActions = (
   const refuseOrder = async (orderId: string, reason?: string) => {
     try {
       console.log('Refusing order:', orderId);
+      
+      // Check if driver is authenticated
+      if (!driverProfile) {
+        throw new Error('Driver not authenticated');
+      }
       
       // If using mock data, use the mock data manager
       if (useMockData || orderId.startsWith('mock_')) {
@@ -102,7 +119,7 @@ export const useOrderActions = (
       console.error('Error refusing order:', error);
       toast({
         title: "Error",
-        description: "Failed to refuse order",
+        description: error instanceof Error ? error.message : "Failed to refuse order",
         variant: "destructive"
       });
       return false;
@@ -112,6 +129,11 @@ export const useOrderActions = (
   const updateOrderStatus = async (orderId: string, newStatus: UnifiedOrderStatus) => {
     try {
       console.log('Updating order status:', orderId, 'to:', newStatus);
+      
+      // Check if driver is authenticated
+      if (!driverProfile) {
+        throw new Error('Driver not authenticated');
+      }
       
       // Generate verification code when starting delivery
       let updateData: any = {
@@ -160,13 +182,18 @@ export const useOrderActions = (
         throw new Error(`Invalid status: ${newStatus}`);
       }
 
+      // Only allow updates to orders assigned to this driver
       const { error } = await supabase
         .from('order')
         .update(updateData)
-        .eq('id', orderId);
+        .eq('id', orderId)
+        .eq('driver_id', driverProfile.id);
 
       if (error) {
         console.error('Update error:', error);
+        if (error.message.includes('policy')) {
+          throw new Error('You are not authorized to update this order');
+        }
         throw error;
       }
 
@@ -181,7 +208,7 @@ export const useOrderActions = (
       console.error('Error updating order status:', error);
       toast({
         title: "Error",
-        description: "Failed to update order status",
+        description: error instanceof Error ? error.message : "Failed to update order status",
         variant: "destructive"
       });
       return false;

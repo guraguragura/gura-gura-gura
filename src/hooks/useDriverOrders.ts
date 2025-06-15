@@ -12,14 +12,16 @@ export const useDriverOrders = () => {
     setLoading,
     fetchAvailableOrders,
     fetchActiveOrders,
-    useMockData
+    useMockData,
+    driverProfile,
+    isDriver
   } = useOrderFetching();
 
   const {
     acceptOrder,
     refuseOrder,
     updateOrderStatus
-  } = useOrderActions(fetchAvailableOrders, fetchActiveOrders, useMockData);
+  } = useOrderActions(fetchAvailableOrders, fetchActiveOrders, useMockData, driverProfile);
 
   useRealtimeUpdates(fetchAvailableOrders);
 
@@ -38,8 +40,13 @@ export const useDriverOrders = () => {
       }
     };
 
-    fetchOrders();
-  }, [fetchAvailableOrders, fetchActiveOrders, setLoading]);
+    // Only fetch orders if the user is authenticated as a driver
+    if (isDriver) {
+      fetchOrders();
+    } else {
+      setLoading(false);
+    }
+  }, [fetchAvailableOrders, fetchActiveOrders, setLoading, isDriver]);
 
   return {
     availableOrders,
@@ -49,7 +56,9 @@ export const useDriverOrders = () => {
     refuseOrder,
     updateOrderStatus,
     refreshOrders,
-    useMockData
+    useMockData,
+    driverProfile,
+    isDriver
   };
 };
 

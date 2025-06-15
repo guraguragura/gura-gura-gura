@@ -1,7 +1,7 @@
-
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useDriverProfile } from '@/hooks/useDriverProfile';
 import type { DriverOrder } from './types';
 import { mockDataManager } from '@/services/mockDataManager';
 
@@ -11,6 +11,7 @@ export const useOrderFetching = () => {
   const [loading, setLoading] = useState(true);
   const [useMockData, setUseMockData] = useState(false);
   const { toast } = useToast();
+  const { driverProfile, isDriver, loading: driverLoading } = useDriverProfile();
 
   const formatOrder = (order: any): DriverOrder => {
     const customer = Array.isArray(order.customer) ? order.customer[0] : order.customer;
@@ -40,8 +41,19 @@ export const useOrderFetching = () => {
   };
 
   const fetchAvailableOrders = useCallback(async () => {
+    // Wait for driver profile to load
+    if (driverLoading) return;
+    
+    // Check if user is authenticated as a driver
+    if (!isDriver || !driverProfile) {
+      console.log('User is not authenticated as a driver');
+      setAvailableOrders([]);
+      setUseMockData(false);
+      return;
+    }
+
     try {
-      console.log('Fetching available orders...');
+      console.log('Fetching available orders for driver:', driverProfile.id);
       
       const { data: orders, error } = await supabase
         .from('order')
@@ -52,6 +64,7 @@ export const useOrderFetching = () => {
           unified_status,
           created_at,
           metadata,
+          driver_id,
           customer:customer_id (
             first_name,
             last_name,
@@ -97,11 +110,21 @@ export const useOrderFetching = () => {
         description: "Showing demo orders with real-time route calculations",
       });
     }
-  }, [toast]);
+  }, [toast, isDriver, driverProfile, driverLoading]);
 
   const fetchActiveOrders = useCallback(async () => {
+    // Wait for driver profile to load
+    if (driverLoading) return;
+    
+    // Check if user is authenticated as a driver
+    if (!isDriver || !driverProfile) {
+      console.log('User is not authenticated as a driver');
+      setActiveOrders([]);
+      return;
+    }
+
     try {
-      console.log('Fetching active orders...');
+      console.log('Fetching active orders for driver:', driverProfile.id);
       
       const { data: orders, error } = await supabase
         .from('order')
@@ -112,6 +135,7 @@ export const useOrderFetching = () => {
           unified_status,
           created_at,
           metadata,
+          driver_id,
           customer:customer_id (
             first_name,
             last_name,
@@ -125,6 +149,7 @@ export const useOrderFetching = () => {
           )
         `)
         .in('unified_status', ['assigned_to_driver', 'picked_up', 'out_for_delivery', 'delivered'])
+        .eq('driver_id', driverProfile.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -148,7 +173,7 @@ export const useOrderFetching = () => {
       const mockOrders = await mockDataManager.getActiveOrders();
       setActiveOrders(mockOrders);
     }
-  }, []);
+  }, [isDriver, driverProfile, driverLoading]);
 
   return {
     availableOrders,
@@ -157,6 +182,8 @@ export const useOrderFetching = () => {
     setLoading,
     fetchAvailableOrders,
     fetchActiveOrders,
-    useMockData
+    useMockData,
+    driverProfile,
+    isDriver
   };
 };
