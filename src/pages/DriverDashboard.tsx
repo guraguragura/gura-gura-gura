@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDriverOrders } from '@/hooks/useDriverOrders';
 import type { Database } from '@/integrations/supabase/types';
 import DashboardHeader from '@/components/driver/DashboardHeader';
@@ -7,6 +6,7 @@ import DashboardStats from '@/components/driver/DashboardStats';
 import AvailableOrdersList from '@/components/driver/AvailableOrdersList';
 import CurrentDeliveries from '@/components/driver/CurrentDeliveries';
 import RecentActivity from '@/components/driver/RecentActivity';
+import DriverSetupGuard from '@/components/driver/DriverSetupGuard';
 
 type UnifiedOrderStatus = Database["public"]["Enums"]["unified_order_status_enum"];
 
@@ -42,31 +42,33 @@ const DriverDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <DashboardHeader onRefresh={refreshOrders} />
-        
-        <AvailableOrdersList 
-          orders={availableOrders}
-          onAcceptOrder={handleAcceptOrder}
-          onRefuseOrder={handleRefuseOrder}
-        />
-
-        <DashboardStats 
-          availableCount={availableOrders.length}
-          activeCount={activeOrders.length}
-        />
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CurrentDeliveries 
-            orders={activeOrders}
-            onUpdateStatus={handleStatusUpdate}
-          />
+    <DriverSetupGuard>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto">
+          <DashboardHeader onRefresh={refreshOrders} />
           
-          <RecentActivity orders={activeOrders} />
+          <AvailableOrdersList 
+            orders={availableOrders}
+            onAcceptOrder={handleAcceptOrder}
+            onRefuseOrder={handleRefuseOrder}
+          />
+
+          <DashboardStats 
+            availableCount={availableOrders.length}
+            activeCount={activeOrders.length}
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CurrentDeliveries 
+              orders={activeOrders}
+              onUpdateStatus={handleStatusUpdate}
+            />
+            
+            <RecentActivity orders={activeOrders} />
+          </div>
         </div>
       </div>
-    </div>
+    </DriverSetupGuard>
   );
 };
 

@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,7 @@ import { RatingStats } from '@/components/driver/RatingStats';
 import { useCurrency } from '@/hooks/useCurrency';
 
 const DriverProfile = () => {
+  const location = useLocation();
   const { user, signOut } = useAuth();
   const { driverProfile, loading: profileLoading, updateDriverProfile, updating, refreshStatistics } = useDriverProfile();
   const { stats: ratingStats, ratings, loading: ratingsLoading } = useDriverRatings(driverProfile?.id);
@@ -22,6 +23,7 @@ const DriverProfile = () => {
   const { formatPrice } = useCurrency();
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingVehicle, setIsEditingVehicle] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile');
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -37,6 +39,14 @@ const DriverProfile = () => {
     plate_number: '',
     vehicle_color: ''
   });
+
+  // Handle opening vehicle tab from navigation state
+  useEffect(() => {
+    if (location.state?.openVehicleTab) {
+      setActiveTab('vehicle');
+      setIsEditingVehicle(true);
+    }
+  }, [location.state]);
 
   React.useEffect(() => {
     if (driverProfile) {
@@ -107,7 +117,7 @@ const DriverProfile = () => {
           <p className="text-gray-600 mt-2">Manage your profile and account settings</p>
         </div>
 
-        <Tabs defaultValue="profile" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="vehicle">Vehicle</TabsTrigger>
