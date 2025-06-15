@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
@@ -20,6 +21,9 @@ const AppContent = () => {
       <Routes>
         {/* Authentication */}
         <Route path="/auth" element={<AuthPage />} />
+        
+        {/* Order Placement (standalone) */}
+        <Route path="/place-order" element={<PlaceOrderPage />} />
         
         {/* Admin Routes - TEMPORARILY UNPROTECTED */}
         <Route path="/admin" element={

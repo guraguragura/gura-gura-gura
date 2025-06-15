@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { orderProcessingService } from '@/services/orderProcessingService';
 import { MapPin, Phone, Package, CreditCard } from 'lucide-react';
 
 const PlaceOrderPage = () => {
@@ -23,17 +23,12 @@ const PlaceOrderPage = () => {
     itemsCount: 1,
     totalAmount: 5000,
     specialInstructions: '',
-    urgency: 'normal'
+    urgency: 'normal' as 'normal' | 'urgent'
   });
 
   const handleInputChange = (field: string, value: string | number) => {
     setOrderData(prev => ({ ...prev, [field]: value }));
   };
-
-  // Helper functions to generate unique IDs
-  const generateCustomerId = () => 'cus_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  const generateAddressId = () => 'addr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  const generateOrderId = () => 'ord_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
   const handlePlaceOrder = async () => {
     if (!orderData.customerName || !orderData.customerPhone || !orderData.deliveryAddress) {
@@ -48,93 +43,27 @@ const PlaceOrderPage = () => {
     setLoading(true);
     
     try {
-      // First check if customer exists
-      const { data: existingCustomer } = await supabase
-        .from('customer')
-        .select('id')
-        .eq('phone', orderData.customerPhone)
-        .single();
+      const result = await orderProcessingService.createOrder({
+        ...orderData,
+        paymentMethod: 'admin_created'
+      });
 
-      let customerId = existingCustomer?.id;
-
-      if (!customerId) {
-        // Create new customer with generated ID
-        const newCustomerId = generateCustomerId();
-        const { data: newCustomer, error: customerError } = await supabase
-          .from('customer')
-          .insert({
-            id: newCustomerId,
-            first_name: orderData.customerName.split(' ')[0] || '',
-            last_name: orderData.customerName.split(' ').slice(1).join(' ') || '',
-            phone: orderData.customerPhone,
-            email: orderData.customerEmail || null,
-            has_account: false
-          })
-          .select('id')
-          .single();
-
-        if (customerError) {
-          console.error('Customer creation error:', customerError);
-          throw new Error('Failed to create customer');
-        }
-        
-        customerId = newCustomer.id;
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
-      // Create shipping address with generated ID
-      const addressId = generateAddressId();
-      const { data: shippingAddress, error: addressError } = await supabase
-        .from('order_address')
-        .insert({
-          id: addressId,
-          first_name: orderData.customerName.split(' ')[0] || '',
-          last_name: orderData.customerName.split(' ').slice(1).join(' ') || '',
-          phone: orderData.customerPhone,
-          address_1: orderData.deliveryAddress,
-          customer_id: customerId
-        })
-        .select('id')
-        .single();
-
-      if (addressError) {
-        console.error('Address creation error:', addressError);
-        throw new Error('Failed to create delivery address');
-      }
-
-      // Create the order with generated ID
-      const orderId = generateOrderId();
-      const estimatedDeliveryTime = orderData.urgency === 'urgent' ? '15-20 mins' : '25-30 mins';
-      
-      const { error: orderError } = await supabase
-        .from('order')
-        .insert({
-          id: orderId,
-          customer_id: customerId,
-          shipping_address_id: shippingAddress.id,
-          currency_code: 'RWF',
-          email: orderData.customerEmail || null,
-          unified_status: 'ready_for_pickup',
-          status: 'pending',
-          metadata: {
-            items_count: orderData.itemsCount,
-            total_amount: orderData.totalAmount,
-            estimated_delivery_time: estimatedDeliveryTime,
-            distance: '2.5 km', // Mock distance for now
-            items_description: orderData.itemsDescription,
-            special_instructions: orderData.specialInstructions,
-            urgency: orderData.urgency,
-            created_via: 'order_placement_system'
-          }
+      // For admin orders, automatically progress to ready_for_pickup
+      if (result.orderId) {
+        await orderProcessingService.processPayment({
+          orderId: result.orderId,
+          paymentMethod: 'admin_created',
+          paymentAmount: orderData.totalAmount
         });
-
-      if (orderError) {
-        console.error('Order creation error:', orderError);
-        throw new Error('Failed to create order');
       }
 
       toast({
         title: "Order Placed Successfully!",
-        description: `Order ${orderId.slice(-8)} has been created and is ready for pickup by a driver.`,
+        description: `Order ${result.orderId?.slice(-8)} has been created and is ready for pickup by a driver.`,
       });
 
       // Reset form

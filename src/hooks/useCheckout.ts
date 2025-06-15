@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartContext } from '@/contexts/CartContext';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { orderProcessingService, OrderCreationData } from '@/services/orderProcessingService';
 
 interface CheckoutFormData {
   firstName: string;
@@ -31,73 +31,52 @@ export function useCheckout() {
     setIsProcessing(true);
 
     try {
-      // Check if user is authenticated
-      const { data: sessionData } = await supabase.auth.getSession();
-      const isAuthenticated = !!sessionData.session;
-
-      // Step 1: Prepare order data
-      const orderData = {
-        customer: {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone
-        },
-        shipping_address: {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          address_1: formData.address,
-          city: formData.city,
-          province: formData.state,
-          postal_code: formData.zipCode,
-          phone: formData.phone
-        },
-        items: items.map(item => ({
-          product_id: item.id,
-          quantity: item.quantity,
-          price: item.discount_price || item.price
-        })),
-        payment_method: formData.paymentMethod,
-        total_amount: total
+      // Create order data from form and cart
+      const orderData: OrderCreationData = {
+        customerName: `${formData.firstName} ${formData.lastName}`.trim(),
+        customerPhone: formData.phone,
+        customerEmail: formData.email,
+        deliveryAddress: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
+        itemsDescription: items.map(item => `${item.name} (x${item.quantity})`).join(', '),
+        itemsCount: items.reduce((sum, item) => sum + item.quantity, 0),
+        totalAmount: total,
+        urgency: 'normal',
+        paymentMethod: formData.paymentMethod
       };
 
-      console.log("Processing order with data:", orderData);
+      console.log("Creating order with data:", orderData);
 
-      // PLACEHOLDER: For now, we'll simulate payment processing
-      // with an 80% success rate for testing both scenarios
+      // Create the order
+      const orderResult = await orderProcessingService.createOrder(orderData);
+      
+      if (!orderResult.success || !orderResult.orderId) {
+        throw new Error(orderResult.message);
+      }
+
+      // Simulate payment processing with 80% success rate
       const simulatePaymentSuccess = Math.random() < 0.8;
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       if (!simulatePaymentSuccess) {
-        // Simulate payment failure for testing
-        console.log("Simulated payment failure");
         throw new Error("Payment processing failed. Please try again.");
       }
-      
-      // Store order in Supabase for guest checkout or if needed
-      if (!isAuthenticated) {
-        // Instead of trying to store in a non-existent table, let's use customer_return_requests
-        // for now as a temporary storage (this is just a placeholder until we properly set up the backend)
-        const { error } = await supabase
-          .from('customer_return_requests')
-          .insert({
-            order_id: `GUEST-${Date.now()}`,
-            order_item_id: 'cart-item',
-            reason: 'guest_checkout',
-            description: JSON.stringify({
-              email: formData.email,
-              order_data: orderData,
-              status: 'pending'
-            })
-          });
-          
-        if (error) {
-          console.error("Error storing guest order:", error);
-          throw new Error("Failed to store order information");
-        }
+
+      // Process payment and update order status
+      const paymentResult = await orderProcessingService.processPayment({
+        orderId: orderResult.orderId,
+        paymentSessionId: `pay_${Date.now()}`,
+        paymentMethod: formData.paymentMethod,
+        paymentAmount: total
+      });
+
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.message);
       }
+
+      // Store order ID for success page
+      sessionStorage.setItem('lastOrderId', orderResult.orderId);
       
       // Clear cart and redirect to success page
       clearCart();
