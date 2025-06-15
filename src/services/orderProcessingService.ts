@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface OrderCreationData {
@@ -26,6 +25,9 @@ export class OrderProcessingService {
   private generateCustomerId = () => 'cus_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   private generateAddressId = () => 'addr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   private generateOrderId = () => 'ord_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+  // Generate 2-digit verification code
+  private generateVerificationCode = () => Math.floor(Math.random() * 90 + 10).toString();
 
   async createOrder(orderData: OrderCreationData): Promise<{ success: boolean; orderId?: string; message: string }> {
     try {
@@ -144,6 +146,57 @@ export class OrderProcessingService {
       return {
         success: false,
         message: error instanceof Error ? error.message : 'Payment processing failed'
+      };
+    }
+  }
+
+  async updateOrderStatus(orderId: string, newStatus: string): Promise<{ success: boolean; message: string; verificationCode?: string }> {
+    try {
+      let updateData: any = {
+        unified_status: newStatus,
+        updated_at: new Date().toISOString()
+      };
+
+      // Generate verification code when order goes out for delivery
+      let verificationCode: string | undefined;
+      if (newStatus === 'out_for_delivery') {
+        verificationCode = this.generateVerificationCode();
+        
+        // Get existing metadata
+        const { data: existingOrder } = await supabase
+          .from('order')
+          .select('metadata')
+          .eq('id', orderId)
+          .single();
+
+        const existingMetadata = (existingOrder?.metadata as Record<string, any>) || {};
+        
+        updateData.metadata = {
+          ...existingMetadata,
+          delivery_verification_code: verificationCode
+        };
+      }
+
+      const { error } = await supabase
+        .from('order')
+        .update(updateData)
+        .eq('id', orderId);
+
+      if (error) {
+        throw new Error('Failed to update order status');
+      }
+
+      return {
+        success: true,
+        message: 'Order status updated successfully',
+        verificationCode
+      };
+
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to update order status'
       };
     }
   }

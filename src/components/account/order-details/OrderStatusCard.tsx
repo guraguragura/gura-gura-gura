@@ -17,6 +17,7 @@ import {
 import { OrderStatus } from '../Orders';
 import { RealTimeOrderStatus } from '@/components/order-tracking/RealTimeOrderStatus';
 import { DetailedOrderTimeline } from '@/components/order-tracking/DetailedOrderTimeline';
+import { useOrderRealtime } from '@/hooks/useOrderRealtime';
 
 interface OrderStatusCardProps {
   order: {
@@ -35,39 +36,13 @@ interface OrderStatusCardProps {
   isOrderCanceled: boolean;
 }
 
-const statusConfig: Record<OrderStatus, { icon: React.ReactNode; color: string; label: string }> = {
-  pending: { 
-    icon: <Clock className="h-5 w-5" />, 
-    color: 'text-yellow-500', 
-    label: 'Pending' 
-  },
-  processing: { 
-    icon: <Package className="h-5 w-5" />, 
-    color: 'text-blue-500', 
-    label: 'Processing' 
-  },
-  out_for_delivery: { 
-    icon: <Truck className="h-5 w-5" />, 
-    color: 'text-indigo-500', 
-    label: 'Out for Delivery' 
-  },
-  delivered: { 
-    icon: <CheckCircle className="h-5 w-5" />, 
-    color: 'text-green-500', 
-    label: 'Delivered' 
-  },
-  canceled: { 
-    icon: <XCircle className="h-5 w-5" />, 
-    color: 'text-red-500', 
-    label: 'Canceled' 
-  }
-};
-
 export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({ 
   order, 
   currentStepIndex, 
   isOrderCanceled 
 }) => {
+  const { verificationCode } = useOrderRealtime(order.id);
+
   return (
     <div className="space-y-4">
       <Card>
@@ -88,6 +63,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
         <DetailedOrderTimeline 
           unifiedStatus={order.unified_status}
           timestamps={order.timestamps}
+          verificationCode={verificationCode}
         />
       )}
       

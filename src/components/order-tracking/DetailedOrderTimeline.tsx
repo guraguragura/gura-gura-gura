@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, Clock, Package, Truck, MapPin } from 'lucide-react';
+import { Check, Clock, Package, Truck, MapPin, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface DetailedOrderTimelineProps {
@@ -11,11 +11,13 @@ interface DetailedOrderTimelineProps {
     picked_up_at?: string;
     delivered_at?: string;
   };
+  verificationCode?: string;
 }
 
 export const DetailedOrderTimeline: React.FC<DetailedOrderTimelineProps> = ({
   unifiedStatus,
-  timestamps = {}
+  timestamps = {},
+  verificationCode
 }) => {
   const steps = [
     {
@@ -43,7 +45,18 @@ export const DetailedOrderTimeline: React.FC<DetailedOrderTimelineProps> = ({
       key: 'out_for_delivery',
       label: 'Out for Delivery',
       icon: Truck,
-      description: 'On the way to your location'
+      description: 'On the way to your location',
+      extraInfo: verificationCode ? (
+        <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="flex items-center gap-2 text-blue-700 text-sm font-medium mb-1">
+            <Shield className="h-4 w-4" />
+            Verification Code Required
+          </div>
+          <p className="text-xs text-blue-600">
+            Your driver will ask for a verification code to confirm delivery.
+          </p>
+        </div>
+      ) : undefined
     },
     {
       key: 'delivered',
@@ -112,6 +125,7 @@ export const DetailedOrderTimeline: React.FC<DetailedOrderTimelineProps> = ({
                       </div>
                     </div>
                   )}
+                  {step.extraInfo && isCurrent && step.extraInfo}
                 </div>
               </div>
             );

@@ -3,6 +3,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Truck, Package, CheckCircle, Clock } from 'lucide-react';
 import { useOrderRealtime } from '@/hooks/useOrderRealtime';
+import { VerificationCodeDisplay } from './VerificationCodeDisplay';
 
 interface RealTimeOrderStatusProps {
   orderId: string;
@@ -15,11 +16,15 @@ export const RealTimeOrderStatus: React.FC<RealTimeOrderStatusProps> = ({
   initialStatus,
   initialUnifiedStatus
 }) => {
-  const { orderUpdate } = useOrderRealtime(orderId);
+  const { orderUpdate, verificationCode } = useOrderRealtime(orderId);
   
   // Use real-time update if available, otherwise fall back to initial values
   const currentStatus = orderUpdate?.status || initialStatus;
   const currentUnifiedStatus = orderUpdate?.unified_status || initialUnifiedStatus;
+  
+  // Check for verification code in metadata
+  const metadata = orderUpdate?.metadata || {};
+  const displayCode = verificationCode || metadata.delivery_verification_code;
 
   const getStatusInfo = (status: string, unifiedStatus?: string) => {
     // If we have unified status, use it for more detailed info
@@ -99,14 +104,23 @@ export const RealTimeOrderStatus: React.FC<RealTimeOrderStatusProps> = ({
   const statusInfo = getStatusInfo(currentStatus, currentUnifiedStatus);
 
   return (
-    <div className="flex items-center gap-3">
-      <Badge className={`${statusInfo.color} flex items-center gap-1`}>
-        {statusInfo.icon}
-        {statusInfo.label}
-      </Badge>
-      <div className="text-sm text-gray-600">
-        {statusInfo.description}
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <Badge className={`${statusInfo.color} flex items-center gap-1`}>
+          {statusInfo.icon}
+          {statusInfo.label}
+        </Badge>
+        <div className="text-sm text-gray-600">
+          {statusInfo.description}
+        </div>
       </div>
+      
+      {displayCode && currentUnifiedStatus === 'out_for_delivery' && (
+        <VerificationCodeDisplay 
+          code={displayCode} 
+          orderStatus={currentUnifiedStatus} 
+        />
+      )}
     </div>
   );
 };
