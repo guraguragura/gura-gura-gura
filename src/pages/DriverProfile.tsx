@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,31 +6,98 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Phone, Mail, MapPin, Car, Star, Settings } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Car, Star, Settings, RefreshCw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDriverProfile } from '@/hooks/useDriverProfile';
 import { useDriverRatings } from '@/hooks/useDriverRatings';
+import { useDriverEarnings } from '@/hooks/useDriverEarnings';
 import { RatingStats } from '@/components/driver/RatingStats';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const DriverProfile = () => {
   const { user, signOut } = useAuth();
-  const { driverProfile } = useDriverProfile();
+  const { driverProfile, loading: profileLoading, updateDriverProfile, updating, refreshStatistics } = useDriverProfile();
   const { stats: ratingStats, ratings, loading: ratingsLoading } = useDriverRatings(driverProfile?.id);
+  const { earnings, formattedEarnings } = useDriverEarnings(driverProfile?.id);
+  const { formatPrice } = useCurrency();
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingVehicle, setIsEditingVehicle] = useState(false);
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    phone: '',
+    email: '',
+    address: '',
+    emergency_contact: ''
+  });
+  const [vehicleData, setVehicleData] = useState({
+    vehicle_make: '',
+    vehicle_model: '',
+    vehicle_year: '',
+    plate_number: '',
+    vehicle_color: ''
+  });
 
-  const driverStats = {
-    totalDeliveries: 1247,
-    totalEarnings: 'RWF 2,450,000',
-    yearsActive: 2
+  React.useEffect(() => {
+    if (driverProfile) {
+      setFormData({
+        first_name: driverProfile.first_name || '',
+        last_name: driverProfile.last_name || '',
+        phone: driverProfile.phone || '',
+        email: driverProfile.email || user?.email || '',
+        address: driverProfile.address || '',
+        emergency_contact: driverProfile.emergency_contact || ''
+      });
+      setVehicleData({
+        vehicle_make: driverProfile.vehicle_make || '',
+        vehicle_model: driverProfile.vehicle_model || '',
+        vehicle_year: driverProfile.vehicle_year?.toString() || '',
+        plate_number: driverProfile.plate_number || '',
+        vehicle_color: driverProfile.vehicle_color || ''
+      });
+    }
+  }, [driverProfile, user]);
+
+  const handleSaveProfile = async () => {
+    const success = await updateDriverProfile({
+      ...formData,
+      vehicle_year: vehicleData.vehicle_year ? parseInt(vehicleData.vehicle_year) : undefined
+    });
+    if (success) {
+      setIsEditing(false);
+    }
   };
 
-  const vehicleInfo = {
-    make: 'Toyota',
-    model: 'Hiace',
-    year: '2019',
-    plateNumber: 'RAD 123C',
-    color: 'White'
+  const handleSaveVehicle = async () => {
+    const success = await updateDriverProfile({
+      ...vehicleData,
+      vehicle_year: vehicleData.vehicle_year ? parseInt(vehicleData.vehicle_year) : undefined
+    });
+    if (success) {
+      setIsEditingVehicle(false);
+    }
   };
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#84D1D3] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading driver profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!driverProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Driver profile not found.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -56,6 +124,7 @@ const DriverProfile = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsEditing(!isEditing)}
+                    disabled={updating}
                   >
                     {isEditing ? 'Cancel' : 'Edit'}
                   </Button>
@@ -68,7 +137,7 @@ const DriverProfile = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold">
-                      {driverProfile?.first_name} {driverProfile?.last_name}
+                      {driverProfile.first_name} {driverProfile.last_name}
                     </h3>
                     <p className="text-gray-600">Gura Driver</p>
                     <div className="flex items-center mt-1">
@@ -89,7 +158,8 @@ const DriverProfile = () => {
                       <Label htmlFor="firstName">First Name</Label>
                       <Input
                         id="firstName"
-                        defaultValue={driverProfile?.first_name || ''}
+                        value={formData.first_name}
+                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                         disabled={!isEditing}
                       />
                     </div>
@@ -97,7 +167,8 @@ const DriverProfile = () => {
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
-                        defaultValue={driverProfile?.last_name || ''}
+                        value={formData.last_name}
+                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                         disabled={!isEditing}
                       />
                     </div>
@@ -105,7 +176,8 @@ const DriverProfile = () => {
                       <Label htmlFor="phone">Phone Number</Label>
                       <Input
                         id="phone"
-                        defaultValue={driverProfile?.phone || ''}
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         disabled={!isEditing}
                       />
                     </div>
@@ -115,7 +187,8 @@ const DriverProfile = () => {
                       <Label htmlFor="email">Email</Label>
                       <Input
                         id="email"
-                        defaultValue={driverProfile?.email || user?.email || ''}
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         disabled={!isEditing}
                       />
                     </div>
@@ -123,16 +196,20 @@ const DriverProfile = () => {
                       <Label htmlFor="address">Address</Label>
                       <Input
                         id="address"
-                        defaultValue="Kigali, Rwanda"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         disabled={!isEditing}
+                        placeholder="Enter your address"
                       />
                     </div>
                     <div>
                       <Label htmlFor="emergencyContact">Emergency Contact</Label>
                       <Input
                         id="emergencyContact"
-                        defaultValue="+250 788 654 321"
+                        value={formData.emergency_contact}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })}
                         disabled={!isEditing}
+                        placeholder="Emergency contact number"
                       />
                     </div>
                   </div>
@@ -140,8 +217,12 @@ const DriverProfile = () => {
 
                 {isEditing && (
                   <div className="flex space-x-2 pt-4">
-                    <Button className="bg-[#84D1D3] hover:bg-[#6bb6b9]">
-                      Save Changes
+                    <Button 
+                      className="bg-[#84D1D3] hover:bg-[#6bb6b9]"
+                      onClick={handleSaveProfile}
+                      disabled={updating}
+                    >
+                      {updating ? 'Saving...' : 'Save Changes'}
                     </Button>
                     <Button variant="outline" onClick={() => setIsEditing(false)}>
                       Cancel
@@ -163,41 +244,101 @@ const DriverProfile = () => {
           <TabsContent value="vehicle" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Vehicle Information</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Vehicle Information</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingVehicle(!isEditingVehicle)}
+                    disabled={updating}
+                  >
+                    {isEditingVehicle ? 'Cancel' : 'Edit'}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
                       <Label>Make</Label>
-                      <p className="text-lg">{vehicleInfo.make}</p>
+                      {isEditingVehicle ? (
+                        <Input
+                          value={vehicleData.vehicle_make}
+                          onChange={(e) => setVehicleData({ ...vehicleData, vehicle_make: e.target.value })}
+                          placeholder="Enter vehicle make"
+                        />
+                      ) : (
+                        <p className="text-lg">{driverProfile.vehicle_make || 'Not specified'}</p>
+                      )}
                     </div>
                     <div>
                       <Label>Model</Label>
-                      <p className="text-lg">{vehicleInfo.model}</p>
+                      {isEditingVehicle ? (
+                        <Input
+                          value={vehicleData.vehicle_model}
+                          onChange={(e) => setVehicleData({ ...vehicleData, vehicle_model: e.target.value })}
+                          placeholder="Enter vehicle model"
+                        />
+                      ) : (
+                        <p className="text-lg">{driverProfile.vehicle_model || 'Not specified'}</p>
+                      )}
                     </div>
                     <div>
                       <Label>Year</Label>
-                      <p className="text-lg">{vehicleInfo.year}</p>
+                      {isEditingVehicle ? (
+                        <Input
+                          type="number"
+                          value={vehicleData.vehicle_year}
+                          onChange={(e) => setVehicleData({ ...vehicleData, vehicle_year: e.target.value })}
+                          placeholder="Enter vehicle year"
+                        />
+                      ) : (
+                        <p className="text-lg">{driverProfile.vehicle_year || 'Not specified'}</p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div>
                       <Label>Plate Number</Label>
-                      <p className="text-lg font-mono">{vehicleInfo.plateNumber}</p>
+                      {isEditingVehicle ? (
+                        <Input
+                          value={vehicleData.plate_number}
+                          onChange={(e) => setVehicleData({ ...vehicleData, plate_number: e.target.value })}
+                          placeholder="Enter plate number"
+                        />
+                      ) : (
+                        <p className="text-lg font-mono">{driverProfile.plate_number || 'Not specified'}</p>
+                      )}
                     </div>
                     <div>
                       <Label>Color</Label>
-                      <p className="text-lg">{vehicleInfo.color}</p>
+                      {isEditingVehicle ? (
+                        <Input
+                          value={vehicleData.vehicle_color}
+                          onChange={(e) => setVehicleData({ ...vehicleData, vehicle_color: e.target.value })}
+                          placeholder="Enter vehicle color"
+                        />
+                      ) : (
+                        <p className="text-lg">{driverProfile.vehicle_color || 'Not specified'}</p>
+                      )}
                     </div>
                   </div>
                 </div>
-                <div className="mt-6">
-                  <Button variant="outline">
-                    <Car className="mr-2 h-4 w-4" />
-                    Update Vehicle Info
-                  </Button>
-                </div>
+                
+                {isEditingVehicle && (
+                  <div className="mt-6 flex space-x-2">
+                    <Button 
+                      className="bg-[#84D1D3] hover:bg-[#6bb6b9]"
+                      onClick={handleSaveVehicle}
+                      disabled={updating}
+                    >
+                      {updating ? 'Saving...' : 'Save Vehicle Info'}
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsEditingVehicle(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -206,12 +347,22 @@ const DriverProfile = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Delivery Statistics</CardTitle>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Delivery Statistics</CardTitle>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={refreshStatistics}
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
                     <span>Total Deliveries:</span>
-                    <span className="font-semibold">{driverStats.totalDeliveries}</span>
+                    <span className="font-semibold">{driverProfile.total_deliveries || 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Average Rating:</span>
@@ -224,11 +375,11 @@ const DriverProfile = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>Years Active:</span>
-                    <span className="font-semibold">{driverStats.yearsActive} years</span>
+                    <span className="font-semibold">{driverProfile.years_active || 0} years</span>
                   </div>
                   <div className="flex justify-between">
                     <span>On-time Delivery:</span>
-                    <span className="font-semibold">96%</span>
+                    <span className="font-semibold">{driverProfile.on_time_percentage || 0}%</span>
                   </div>
                 </CardContent>
               </Card>
@@ -240,19 +391,19 @@ const DriverProfile = () => {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
                     <span>Total Earnings:</span>
-                    <span className="font-semibold">{driverStats.totalEarnings}</span>
+                    <span className="font-semibold">{formatPrice(driverProfile.total_earnings || 0)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>This Month:</span>
-                    <span className="font-semibold">RWF 185,000</span>
+                    <span className="font-semibold">{formattedEarnings.month}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>This Week:</span>
-                    <span className="font-semibold">RWF 42,000</span>
+                    <span className="font-semibold">{formattedEarnings.week}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Today:</span>
-                    <span className="font-semibold">RWF 8,500</span>
+                    <span className="font-semibold">{formattedEarnings.today}</span>
                   </div>
                 </CardContent>
               </Card>

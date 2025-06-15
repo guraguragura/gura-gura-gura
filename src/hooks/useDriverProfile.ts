@@ -15,12 +15,34 @@ interface DriverProfile {
   is_available: boolean;
   average_rating?: number;
   total_ratings?: number;
+  // Vehicle information
+  vehicle_make?: string;
+  vehicle_model?: string;
+  vehicle_year?: number;
+  plate_number?: string;
+  vehicle_color?: string;
+  vehicle_type?: string;
+  // Statistics
+  total_deliveries?: number;
+  total_earnings?: number;
+  years_active?: number;
+  on_time_percentage?: number;
+  // Personal details
+  address?: string;
+  emergency_contact?: string;
+}
+
+interface PeriodEarnings {
+  today: number;
+  week: number;
+  month: number;
 }
 
 export const useDriverProfile = () => {
   const [driverProfile, setDriverProfile] = useState<DriverProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updating, setUpdating] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -43,7 +65,6 @@ export const useDriverProfile = () => {
 
         if (fetchError) {
           if (fetchError.code === 'PGRST116') {
-            // No driver profile found
             setError('Driver profile not found. Please contact support.');
           } else {
             throw fetchError;
@@ -67,10 +88,77 @@ export const useDriverProfile = () => {
     fetchDriverProfile();
   }, [user, toast]);
 
+  const updateDriverProfile = async (updates: Partial<DriverProfile>) => {
+    if (!driverProfile) return false;
+
+    try {
+      setUpdating(true);
+      
+      const { error: updateError } = await supabase
+        .from('driver_profiles')
+        .update(updates)
+        .eq('id', driverProfile.id);
+
+      if (updateError) throw updateError;
+
+      setDriverProfile(prev => prev ? { ...prev, ...updates } : null);
+      
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+      
+      return true;
+    } catch (err) {
+      console.error('Error updating driver profile:', err);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const refreshStatistics = async () => {
+    if (!driverProfile) return;
+
+    try {
+      const { data, error } = await supabase.rpc('calculate_driver_statistics', {
+        p_driver_id: driverProfile.id
+      });
+
+      if (error) throw error;
+
+      // Refetch the updated profile
+      const { data: updatedProfile, error: fetchError } = await supabase
+        .from('driver_profiles')
+        .select('*')
+        .eq('id', driverProfile.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      setDriverProfile(updatedProfile);
+    } catch (err) {
+      console.error('Error refreshing statistics:', err);
+      toast({
+        title: "Error",
+        description: "Failed to refresh statistics",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     driverProfile,
     loading,
     error,
-    isDriver: !!driverProfile
+    updating,
+    isDriver: !!driverProfile,
+    updateDriverProfile,
+    refreshStatistics
   };
 };

@@ -1173,58 +1173,91 @@ export type Database = {
       }
       driver_profiles: {
         Row: {
+          address: string | null
           average_rating: number | null
           created_at: string
           current_location: Json | null
           driver_license: string | null
           email: string | null
+          emergency_contact: string | null
           first_name: string
           id: string
           is_active: boolean | null
           is_available: boolean | null
           last_name: string
           metadata: Json | null
+          on_time_percentage: number | null
           phone: string | null
+          plate_number: string | null
+          total_deliveries: number | null
+          total_earnings: number | null
           total_ratings: number | null
           updated_at: string
           user_id: string
+          vehicle_color: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
           vehicle_type: string | null
+          vehicle_year: number | null
+          years_active: number | null
         }
         Insert: {
+          address?: string | null
           average_rating?: number | null
           created_at?: string
           current_location?: Json | null
           driver_license?: string | null
           email?: string | null
+          emergency_contact?: string | null
           first_name: string
           id?: string
           is_active?: boolean | null
           is_available?: boolean | null
           last_name: string
           metadata?: Json | null
+          on_time_percentage?: number | null
           phone?: string | null
+          plate_number?: string | null
+          total_deliveries?: number | null
+          total_earnings?: number | null
           total_ratings?: number | null
           updated_at?: string
           user_id: string
+          vehicle_color?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
           vehicle_type?: string | null
+          vehicle_year?: number | null
+          years_active?: number | null
         }
         Update: {
+          address?: string | null
           average_rating?: number | null
           created_at?: string
           current_location?: Json | null
           driver_license?: string | null
           email?: string | null
+          emergency_contact?: string | null
           first_name?: string
           id?: string
           is_active?: boolean | null
           is_available?: boolean | null
           last_name?: string
           metadata?: Json | null
+          on_time_percentage?: number | null
           phone?: string | null
+          plate_number?: string | null
+          total_deliveries?: number | null
+          total_earnings?: number | null
           total_ratings?: number | null
           updated_at?: string
           user_id?: string
+          vehicle_color?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
           vehicle_type?: string | null
+          vehicle_year?: number | null
+          years_active?: number | null
         }
         Relationships: []
       }
@@ -6043,6 +6076,14 @@ export type Database = {
     Functions: {
       accept_driver_order: {
         Args: { p_order_id: string; p_driver_id: string }
+        Returns: Json
+      }
+      calculate_driver_period_earnings: {
+        Args: { p_driver_id: string; p_period: string }
+        Returns: number
+      }
+      calculate_driver_statistics: {
+        Args: { p_driver_id: string }
         Returns: Json
       }
       get_products_by_category: {
