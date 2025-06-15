@@ -24,6 +24,11 @@ const OrderManagement = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Helper function to generate unique IDs
+  const generateCustomerId = () => 'cus_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+  const generateAddressId = () => 'addr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+  const generateOrderId = () => 'ord_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+
   const fetchOrders = async () => {
     try {
       const { data, error } = await supabase
@@ -55,7 +60,7 @@ const OrderManagement = () => {
       const formattedOrders: AdminOrder[] = data?.map(order => {
         const customer = Array.isArray(order.customer) ? order.customer[0] : order.customer;
         const address = Array.isArray(order.shipping_address) ? order.shipping_address[0] : order.shipping_address;
-        const metadata = order.metadata || {};
+        const metadata = order.metadata as Record<string, any> || {};
         
         return {
           id: order.id,
@@ -106,47 +111,48 @@ const OrderManagement = () => {
     const randomOrder = testOrders[Math.floor(Math.random() * testOrders.length)];
     
     try {
+      // Generate unique IDs
+      const customerId = generateCustomerId();
+      const addressId = generateAddressId();
+      const orderId = generateOrderId();
+
       // Create customer
-      const { data: customer, error: customerError } = await supabase
+      const { error: customerError } = await supabase
         .from('customer')
         .insert({
+          id: customerId,
           first_name: randomOrder.customerName.split(' ')[0],
           last_name: randomOrder.customerName.split(' ')[1] || '',
           phone: randomOrder.phone,
           has_account: false
-        })
-        .select('id')
-        .single();
+        });
 
       if (customerError) throw customerError;
 
       // Create address
-      const { data: address, error: addressError } = await supabase
+      const { error: addressError } = await supabase
         .from('order_address')
         .insert({
+          id: addressId,
           first_name: randomOrder.customerName.split(' ')[0],
           last_name: randomOrder.customerName.split(' ')[1] || '',
           phone: randomOrder.phone,
           address_1: randomOrder.address,
-          customer_id: customer.id
-        })
-        .select('id')
-        .single();
+          customer_id: customerId
+        });
 
       if (addressError) throw addressError;
 
       // Create order
-      const orderId = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-      
       const { error: orderError } = await supabase
         .from('order')
         .insert({
           id: orderId,
-          customer_id: customer.id,
-          shipping_address_id: address.id,
+          customer_id: customerId,
+          shipping_address_id: addressId,
           currency_code: 'RWF',
           unified_status: 'ready_for_pickup',
-          status: 'processing',
+          status: 'pending',
           metadata: {
             items_count: Math.floor(Math.random() * 3) + 1,
             total_amount: randomOrder.amount,

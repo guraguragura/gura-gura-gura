@@ -30,9 +30,10 @@ const PlaceOrderPage = () => {
     setOrderData(prev => ({ ...prev, [field]: value }));
   };
 
-  const generateOrderId = () => {
-    return 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  };
+  // Helper functions to generate unique IDs
+  const generateCustomerId = () => 'cus_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  const generateAddressId = () => 'addr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  const generateOrderId = () => 'ord_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
   const handlePlaceOrder = async () => {
     if (!orderData.customerName || !orderData.customerPhone || !orderData.deliveryAddress) {
@@ -47,7 +48,7 @@ const PlaceOrderPage = () => {
     setLoading(true);
     
     try {
-      // First create or get customer
+      // First check if customer exists
       const { data: existingCustomer } = await supabase
         .from('customer')
         .select('id')
@@ -57,9 +58,12 @@ const PlaceOrderPage = () => {
       let customerId = existingCustomer?.id;
 
       if (!customerId) {
+        // Create new customer with generated ID
+        const newCustomerId = generateCustomerId();
         const { data: newCustomer, error: customerError } = await supabase
           .from('customer')
           .insert({
+            id: newCustomerId,
             first_name: orderData.customerName.split(' ')[0] || '',
             last_name: orderData.customerName.split(' ').slice(1).join(' ') || '',
             phone: orderData.customerPhone,
@@ -77,10 +81,12 @@ const PlaceOrderPage = () => {
         customerId = newCustomer.id;
       }
 
-      // Create shipping address
+      // Create shipping address with generated ID
+      const addressId = generateAddressId();
       const { data: shippingAddress, error: addressError } = await supabase
         .from('order_address')
         .insert({
+          id: addressId,
           first_name: orderData.customerName.split(' ')[0] || '',
           last_name: orderData.customerName.split(' ').slice(1).join(' ') || '',
           phone: orderData.customerPhone,
@@ -95,7 +101,7 @@ const PlaceOrderPage = () => {
         throw new Error('Failed to create delivery address');
       }
 
-      // Create the order
+      // Create the order with generated ID
       const orderId = generateOrderId();
       const estimatedDeliveryTime = orderData.urgency === 'urgent' ? '15-20 mins' : '25-30 mins';
       
@@ -108,7 +114,7 @@ const PlaceOrderPage = () => {
           currency_code: 'RWF',
           email: orderData.customerEmail || null,
           unified_status: 'ready_for_pickup',
-          status: 'processing',
+          status: 'pending',
           metadata: {
             items_count: orderData.itemsCount,
             total_amount: orderData.totalAmount,
