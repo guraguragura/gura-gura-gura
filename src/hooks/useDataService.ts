@@ -1,17 +1,8 @@
 
 import { useMemo } from 'react';
-import { DataService } from '@/services/dataService';
-import { useDriverProfile } from '@/hooks/useDriverProfile';
+import { useOfflineDataService } from './useOfflineDataService';
 
 export const useDataService = () => {
-  const { driverProfile, isDriver } = useDriverProfile();
-  
-  const dataService = useMemo(() => {
-    return new DataService({
-      useMockData: !isDriver || !driverProfile,
-      driverProfile
-    });
-  }, [isDriver, driverProfile]);
-
+  const { dataService } = useOfflineDataService();
   return dataService;
 };

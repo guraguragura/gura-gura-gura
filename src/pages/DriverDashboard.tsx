@@ -9,6 +9,7 @@ import AvailableOrdersList from '@/components/driver/AvailableOrdersList';
 import CurrentDeliveries from '@/components/driver/CurrentDeliveries';
 import RecentActivity from '@/components/driver/RecentActivity';
 import ErrorBoundary from '@/components/driver/ErrorBoundary';
+import { OfflineIndicator } from '@/components/driver/OfflineIndicator';
 import { DashboardStatsSkeleton } from '@/components/driver/LoadingSkeleton';
 
 type UnifiedOrderStatus = Database["public"]["Enums"]["unified_order_status_enum"];
@@ -76,6 +77,8 @@ const DriverDashboard = () => {
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
           <DashboardHeader onRefresh={handleRefresh} refreshing={refreshing} />
+          
+          <OfflineIndicator />
           
           <AvailableOrdersList 
             orders={availableOrders}
