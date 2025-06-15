@@ -45,13 +45,14 @@ const PaymentSuccessPage = () => {
       if (result.success && result.order) {
         const order = result.order;
         const customer = Array.isArray(order.customer) ? order.customer[0] : order.customer;
+        const metadata = (order.metadata as Record<string, any>) || {};
         
         setOrderInfo({
           id: order.id,
           unified_status: order.unified_status,
           customer_name: customer ? `${customer.first_name} ${customer.last_name}`.trim() : 'Customer',
-          total_amount: order.metadata?.total_amount || 0,
-          estimated_delivery_time: order.metadata?.estimated_delivery_time || '30-45 mins'
+          total_amount: metadata.total_amount || 0,
+          estimated_delivery_time: metadata.estimated_delivery_time || '30-45 mins'
         });
       }
     } catch (error) {

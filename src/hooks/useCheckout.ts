@@ -37,7 +37,7 @@ export function useCheckout() {
         customerPhone: formData.phone,
         customerEmail: formData.email,
         deliveryAddress: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
-        itemsDescription: items.map(item => `${item.name} (x${item.quantity})`).join(', '),
+        itemsDescription: items.map(item => `${item.title} (x${item.quantity})`).join(', '),
         itemsCount: items.reduce((sum, item) => sum + item.quantity, 0),
         totalAmount: total,
         urgency: 'normal',
