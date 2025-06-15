@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/hooks/useCurrency';
 import { toast } from '@/hooks/use-toast';
 import { useOrderDetails } from '@/hooks/useOrderDetails';
+import { useOrderRating } from '@/hooks/useOrderRating';
+import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Import refactored components
@@ -26,8 +28,10 @@ const orderSteps = [
 export const OrderDetails = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { formatPrice, isLoading: currencyLoading } = useCurrency();
   const { orderDetails: order, loading, error, retryFetch } = useOrderDetails(orderId);
+  const { orderRating, hasRating, refetch: refetchRating } = useOrderRating(orderId);
   const [isRetrying, setIsRetrying] = useState(false);
   
   const goBack = () => {
@@ -123,6 +127,23 @@ export const OrderDetails = () => {
   const isOrderCanceled = order.status === 'canceled';
   const isOrderDelivered = order.status === 'delivered';
 
+  // Get customer ID for rating purposes
+  const getCustomerId = async () => {
+    if (!user?.email) return null;
+    
+    try {
+      const { data } = await supabase
+        .from('customer')
+        .select('id')
+        .eq('email', user.email)
+        .single();
+      
+      return data?.id || null;
+    } catch {
+      return null;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center">
@@ -153,6 +174,13 @@ export const OrderDetails = () => {
         isOrderDelivered={isOrderDelivered}
         onReturnOrder={handleReturnOrder}
         onCancelOrder={handleCancelOrder}
+        order={{
+          id: order.id,
+          driver_id: (order as any).driver_id,
+          driver_name: (order as any).driver_name,
+          customer_id: user?.id,
+          hasRating: hasRating
+        }}
       />
     </div>
   );

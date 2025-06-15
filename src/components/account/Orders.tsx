@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, Package, CheckCircle, Truck, XCircle } from 'lucide-react';
@@ -7,6 +8,7 @@ import { useAllOrdersRealtime } from '@/hooks/useAllOrdersRealtime';
 import { useOrders } from '@/hooks/useOrders';
 import { OrdersSkeleton } from './OrdersSkeleton';
 import { OrdersError } from './OrdersError';
+import { RatingIndicator } from './RatingIndicator';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Define the possible order statuses
@@ -183,6 +185,7 @@ export const Orders = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -217,6 +220,14 @@ export const Orders = () => {
                     <div className="text-sm text-gray-900">
                       {currencyLoading ? '...' : formatPrice(order.total)}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <RatingIndicator
+                      isDelivered={order.status === 'delivered'}
+                      hasDriver={!!(order as any).driver_id}
+                      hasRating={(order as any).has_rating}
+                      onRateClick={() => window.location.href = `/account/orders/${order.id}`}
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link to={`/account/orders/${order.id}`} className="text-blue-600 hover:text-blue-900">

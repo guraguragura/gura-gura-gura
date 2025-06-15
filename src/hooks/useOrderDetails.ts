@@ -37,6 +37,8 @@ interface OrderDetail {
     picked_up_at?: string;
     delivered_at?: string;
   };
+  driver_id?: string;
+  driver_name?: string;
 }
 
 export const useOrderDetails = (orderId?: string) => {
@@ -70,7 +72,12 @@ export const useOrderDetails = (orderId?: string) => {
           picked_up_at,
           delivered_at,
           shipping_address_id,
-          billing_address_id
+          billing_address_id,
+          driver_id,
+          driver_profiles!inner(
+            first_name,
+            last_name
+          )
         `)
         .eq('id', orderId)
         .eq('customer_id', user.id)
@@ -109,7 +116,11 @@ export const useOrderDetails = (orderId?: string) => {
           assigned_at: data.assigned_at,
           picked_up_at: data.picked_up_at,
           delivered_at: data.delivered_at
-        }
+        },
+        driver_id: data.driver_id,
+        driver_name: data.driver_profiles 
+          ? `${data.driver_profiles.first_name} ${data.driver_profiles.last_name}`.trim()
+          : undefined
       };
 
       setOrderDetails(orderDetail);
