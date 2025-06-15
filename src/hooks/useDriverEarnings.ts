@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
 
-interface PeriodEarnings {
+export interface PeriodEarnings {
   today: number;
   week: number;
   month: number;

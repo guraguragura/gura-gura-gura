@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
-interface DriverProfile {
+export interface DriverProfile {
   id: string;
   user_id: string;
   first_name: string;
@@ -32,7 +32,7 @@ interface DriverProfile {
   emergency_contact?: string;
 }
 
-interface PeriodEarnings {
+export interface PeriodEarnings {
   today: number;
   week: number;
   month: number;

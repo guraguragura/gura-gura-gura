@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface DriverRating {
+export interface DriverRating {
   id: string;
   order_id: string;
   rating: number;
@@ -15,7 +15,7 @@ interface DriverRating {
   };
 }
 
-interface RatingStats {
+export interface RatingStats {
   average_rating: number | null;
   total_ratings: number;
   rating_distribution: { [key: number]: number };

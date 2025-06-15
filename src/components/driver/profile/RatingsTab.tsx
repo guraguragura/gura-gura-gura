@@ -3,11 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Star } from 'lucide-react';
 import { RatingStats } from '@/components/driver/RatingStats';
-import type { RatingStats as RatingStatsType, Rating } from '@/hooks/useDriverRatings';
+import type { RatingStats as RatingStatsType, DriverRating } from '@/hooks/useDriverRatings';
 
 interface RatingsTabProps {
   ratingStats: RatingStatsType;
-  ratings: Rating[];
+  ratings: DriverRating[];
   ratingsLoading: boolean;
 }
 
