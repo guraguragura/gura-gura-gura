@@ -4,8 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Phone, Package, Clock } from 'lucide-react';
+import { MapPin, Phone, Package, Clock, RefreshCw } from 'lucide-react';
 import { OrderAcceptanceModal } from './order-acceptance/OrderAcceptanceModal';
+import { ConfirmationDialog } from './ConfirmationDialog';
+import { NoAvailableOrders, OrderListSkeleton } from './EmptyStates';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useToast } from '@/hooks/use-toast';
 import type { DriverOrder } from '@/hooks/useDriverOrders';
 
@@ -13,23 +16,62 @@ interface AvailableOrdersListProps {
   orders: DriverOrder[];
   onAcceptOrder: (orderId: string) => Promise<void>;
   onRefuseOrder: (orderId: string) => Promise<void>;
+  loading?: boolean;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-const AvailableOrdersList = ({ orders, onAcceptOrder, onRefuseOrder }: AvailableOrdersListProps) => {
+const AvailableOrdersList = ({ 
+  orders, 
+  onAcceptOrder, 
+  onRefuseOrder, 
+  loading = false,
+  onRefresh,
+  refreshing = false
+}: AvailableOrdersListProps) => {
   const [selectedOrder, setSelectedOrder] = useState<DriverOrder | null>(null);
   const [showAcceptanceModal, setShowAcceptanceModal] = useState(false);
+  const [showRefuseDialog, setShowRefuseDialog] = useState(false);
+  const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { withErrorHandling } = useErrorHandler();
 
-  const handleAcceptOrder = async (order: DriverOrder) => {
+  const handleAcceptOrder = withErrorHandling(async (order: DriverOrder) => {
+    setProcessingOrderId(order.id);
     try {
       await onAcceptOrder(order.id);
       setSelectedOrder(order);
       setShowAcceptanceModal(true);
-    } catch (error) {
-      console.error('Error accepting order:', error);
+      toast({
+        title: "Order Accepted",
+        description: `You've successfully accepted order #${order.id.slice(-6)}`,
+      });
+    } finally {
+      setProcessingOrderId(null);
     }
-  };
+  }, {
+    fallbackMessage: 'Failed to accept order. Please try again.'
+  });
+
+  const handleRefuseOrder = withErrorHandling(async () => {
+    if (!selectedOrder) return;
+    
+    setProcessingOrderId(selectedOrder.id);
+    try {
+      await onRefuseOrder(selectedOrder.id);
+      setShowRefuseDialog(false);
+      setSelectedOrder(null);
+      toast({
+        title: "Order Refused",
+        description: `Order #${selectedOrder.id.slice(-6)} has been refused`,
+      });
+    } finally {
+      setProcessingOrderId(null);
+    }
+  }, {
+    fallbackMessage: 'Failed to refuse order. Please try again.'
+  });
 
   const handleStartNavigation = () => {
     if (selectedOrder) {
@@ -63,18 +105,57 @@ const AvailableOrdersList = ({ orders, onAcceptOrder, onRefuseOrder }: Available
     setSelectedOrder(null);
   };
 
+  const handleRefuseClick = (order: DriverOrder) => {
+    setSelectedOrder(order);
+    setShowRefuseDialog(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">
+            New Orders Available
+          </h2>
+          {onRefresh && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={true}
+              className="opacity-50"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Loading...
+            </Button>
+          )}
+        </div>
+        <OrderListSkeleton />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          New Orders Available ({orders.length})
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">
+            New Orders Available ({orders.length})
+          </h2>
+          {onRefresh && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onRefresh}
+              disabled={refreshing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          )}
+        </div>
+
         {orders.length === 0 ? (
-          <Card>
-            <CardContent className="p-6 text-center text-gray-500">
-              No new orders available at the moment
-            </CardContent>
-          </Card>
+          <NoAvailableOrders onRefresh={onRefresh} refreshing={refreshing} />
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
@@ -117,14 +198,16 @@ const AvailableOrdersList = ({ orders, onAcceptOrder, onRefuseOrder }: Available
                         size="sm" 
                         className="bg-[#84D1D3] hover:bg-[#6bb6b9]"
                         onClick={() => handleAcceptOrder(order)}
+                        disabled={processingOrderId === order.id}
                       >
-                        Accept Order
+                        {processingOrderId === order.id ? 'Accepting...' : 'Accept Order'}
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm" 
                         className="text-red-600 border-red-200 hover:bg-red-50"
-                        onClick={() => onRefuseOrder(order.id)}
+                        onClick={() => handleRefuseClick(order)}
+                        disabled={processingOrderId === order.id}
                       >
                         Refuse
                       </Button>
@@ -138,14 +221,27 @@ const AvailableOrdersList = ({ orders, onAcceptOrder, onRefuseOrder }: Available
       </div>
 
       {selectedOrder && (
-        <OrderAcceptanceModal
-          isOpen={showAcceptanceModal}
-          onClose={handleCloseModal}
-          order={selectedOrder}
-          onStartNavigation={handleStartNavigation}
-          onViewDetails={handleViewDetails}
-          onContactCustomer={handleContactCustomer}
-        />
+        <>
+          <OrderAcceptanceModal
+            isOpen={showAcceptanceModal}
+            onClose={handleCloseModal}
+            order={selectedOrder}
+            onStartNavigation={handleStartNavigation}
+            onViewDetails={handleViewDetails}
+            onContactCustomer={handleContactCustomer}
+          />
+
+          <ConfirmationDialog
+            isOpen={showRefuseDialog}
+            onClose={() => setShowRefuseDialog(false)}
+            onConfirm={handleRefuseOrder}
+            title="Refuse Order"
+            description={`Are you sure you want to refuse order #${selectedOrder.id.slice(-6)}? This action cannot be undone.`}
+            confirmText="Refuse Order"
+            variant="destructive"
+            loading={processingOrderId === selectedOrder.id}
+          />
+        </>
       )}
     </>
   );

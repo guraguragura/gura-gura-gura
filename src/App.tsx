@@ -14,6 +14,7 @@ import DriverManagement from "@/pages/DriverManagement";
 import CreateDriver from "@/pages/CreateDriver";
 import DriverNavbar from "@/components/layout/DriverNavbar";
 import AdminNavbar from "@/components/admin/AdminNavbar";
+import ErrorBoundary from "@/components/driver/ErrorBoundary";
 
 const AppContent = () => {
   return (
@@ -49,31 +50,31 @@ const AppContent = () => {
         
         {/* Driver Routes - TEMPORARILY UNPROTECTED */}
         <Route path="/dashboard" element={
-          <>
+          <ErrorBoundary fallbackMessage="Driver dashboard is temporarily unavailable. Please try again later.">
             <DriverNavbar />
             <DriverDashboard />
-          </>
+          </ErrorBoundary>
         } />
         
         <Route path="/orders" element={
-          <>
+          <ErrorBoundary fallbackMessage="Orders page is temporarily unavailable. Please try again later.">
             <DriverNavbar />
             <DriverOrders />
-          </>
+          </ErrorBoundary>
         } />
         
         <Route path="/orders/:orderId" element={
-          <>
+          <ErrorBoundary fallbackMessage="Order details are temporarily unavailable. Please try again later.">
             <DriverNavbar />
             <OrderDetailsPage />
-          </>
+          </ErrorBoundary>
         } />
         
         <Route path="/profile" element={
-          <>
+          <ErrorBoundary fallbackMessage="Driver profile is temporarily unavailable. Please try again later.">
             <DriverNavbar />
             <DriverProfile />
-          </>
+          </ErrorBoundary>
         } />
         
         {/* Default redirect to driver dashboard for easy testing */}
