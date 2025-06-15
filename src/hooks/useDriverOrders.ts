@@ -40,7 +40,6 @@ export const useDriverOrders = () => {
       }
     };
 
-    // Only fetch orders if the user is authenticated as a driver
     if (isDriver) {
       fetchOrders();
     } else {
