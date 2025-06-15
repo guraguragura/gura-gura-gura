@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useRealtimeUpdates = (fetchAvailableOrders: () => Promise<void>) => {
+export const useRealtimeUpdates = (invalidateOrders: () => void) => {
   useEffect(() => {
     const channel = supabase
       .channel('order-changes')
@@ -16,7 +16,7 @@ export const useRealtimeUpdates = (fetchAvailableOrders: () => Promise<void>) =>
         },
         () => {
           console.log('Order update detected, refreshing...');
-          fetchAvailableOrders();
+          invalidateOrders();
         }
       )
       .subscribe();
@@ -24,5 +24,5 @@ export const useRealtimeUpdates = (fetchAvailableOrders: () => Promise<void>) =>
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchAvailableOrders]);
+  }, [invalidateOrders]);
 };

@@ -24,7 +24,7 @@ export const useDriverOrdersRefactored = () => {
     isUpdating
   } = useOrderMutations();
 
-  // Set up real-time updates
+  // Set up real-time updates - invalidateOrders is already a function
   useRealtimeUpdates(invalidateOrders);
 
   return {

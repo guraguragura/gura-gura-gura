@@ -12,7 +12,7 @@ export const mockAvailableOrders: DriverOrder[] = [
     estimated_delivery_time: '20-25 mins',
     distance: '2.1 km',
     unified_status: 'ready_for_pickup',
-    created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString() // 15 minutes ago
+    created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString()
   },
   {
     id: 'mock_ord_002',
@@ -24,7 +24,7 @@ export const mockAvailableOrders: DriverOrder[] = [
     estimated_delivery_time: '15-20 mins',
     distance: '1.8 km',
     unified_status: 'ready_for_pickup',
-    created_at: new Date(Date.now() - 8 * 60 * 1000).toISOString() // 8 minutes ago
+    created_at: new Date(Date.now() - 8 * 60 * 1000).toISOString()
   },
   {
     id: 'mock_ord_003',
@@ -36,7 +36,7 @@ export const mockAvailableOrders: DriverOrder[] = [
     estimated_delivery_time: '30-35 mins',
     distance: '3.2 km',
     unified_status: 'ready_for_pickup',
-    created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString() // 25 minutes ago
+    created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString()
   },
   {
     id: 'mock_ord_004',
@@ -48,7 +48,7 @@ export const mockAvailableOrders: DriverOrder[] = [
     estimated_delivery_time: '25-30 mins',
     distance: '2.7 km',
     unified_status: 'ready_for_pickup',
-    created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString() // 5 minutes ago
+    created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()
   }
 ];
 
@@ -63,7 +63,7 @@ export const mockActiveOrders: DriverOrder[] = [
     estimated_delivery_time: '15-20 mins',
     distance: '1.5 km',
     unified_status: 'assigned_to_driver',
-    created_at: new Date(Date.now() - 45 * 60 * 1000).toISOString() // 45 minutes ago
+    created_at: new Date(Date.now() - 45 * 60 * 1000).toISOString()
   },
   {
     id: 'mock_ord_102',
@@ -75,7 +75,7 @@ export const mockActiveOrders: DriverOrder[] = [
     estimated_delivery_time: '10-15 mins',
     distance: '0.9 km',
     unified_status: 'picked_up',
-    created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString() // 30 minutes ago
+    created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()
   },
   {
     id: 'mock_ord_103',
@@ -87,7 +87,7 @@ export const mockActiveOrders: DriverOrder[] = [
     estimated_delivery_time: '20-25 mins',
     distance: '2.3 km',
     unified_status: 'out_for_delivery',
-    created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString() // 1 hour ago
+    created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString()
   }
 ];
 
@@ -102,7 +102,7 @@ export const mockCompletedOrders: DriverOrder[] = [
     estimated_delivery_time: '25-30 mins',
     distance: '2.8 km',
     unified_status: 'delivered',
-    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2 hours ago
+    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
   },
   {
     id: 'mock_ord_202',
@@ -114,6 +114,13 @@ export const mockCompletedOrders: DriverOrder[] = [
     estimated_delivery_time: '20-25 mins',
     distance: '2.1 km',
     unified_status: 'delivered',
-    created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString() // 3 hours ago
+    created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()
   }
+];
+
+// Unified export for data service compatibility
+export const mockDriverOrders: DriverOrder[] = [
+  ...mockAvailableOrders,
+  ...mockActiveOrders,
+  ...mockCompletedOrders
 ];
