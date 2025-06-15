@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
@@ -9,6 +8,7 @@ import { useOrderDetails } from '@/hooks/useOrderDetails';
 import { useOrderRating } from '@/hooks/useOrderRating';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/integrations/supabase/client';
 
 // Import refactored components
 import { OrderStatusCard } from './order-details/OrderStatusCard';
