@@ -43,18 +43,10 @@ export const useOrderRealtime = (orderId?: string) => {
           if (deliveryCode && newOrder.unified_status === 'out_for_delivery') {
             setVerificationCode(deliveryCode);
             
-            // Show prominent toast with verification code
+            // Show simple toast with verification code
             toast({
               title: "🚚 Driver is on the way!",
-              description: (
-                <div className="space-y-2">
-                  <p>Your delivery verification code is:</p>
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-center">
-                    <span className="text-2xl font-bold text-blue-600">{deliveryCode}</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Show this code to your delivery driver</p>
-                </div>
-              ),
+              description: `Your delivery verification code is: ${deliveryCode}. Show this code to your delivery driver.`,
               duration: 10000, // Show for 10 seconds
             });
           }
