@@ -5,9 +5,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthPage from "@/pages/AuthPage";
 import PlaceOrderPage from "@/pages/PlaceOrderPage";
+import DriverDashboard from "@/pages/DriverDashboard";
+import DriverOrders from "@/pages/DriverOrders";
+import DriverProfile from "@/pages/DriverProfile";
+import OrderDetailsPage from "@/pages/OrderDetailsPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import DriverManagement from "@/pages/DriverManagement";
 import CreateDriver from "@/pages/CreateDriver";
+import DriverNavbar from "@/components/layout/DriverNavbar";
 import AdminNavbar from "@/components/admin/AdminNavbar";
 
 const AppContent = () => {
@@ -42,11 +47,40 @@ const AppContent = () => {
           </>
         } />
         
-        {/* Default redirect to place order for main app */}
-        <Route path="/" element={<Navigate to="/place-order" replace />} />
+        {/* Driver Routes - TEMPORARILY UNPROTECTED */}
+        <Route path="/dashboard" element={
+          <>
+            <DriverNavbar />
+            <DriverDashboard />
+          </>
+        } />
+        
+        <Route path="/orders" element={
+          <>
+            <DriverNavbar />
+            <DriverOrders />
+          </>
+        } />
+        
+        <Route path="/orders/:orderId" element={
+          <>
+            <DriverNavbar />
+            <OrderDetailsPage />
+          </>
+        } />
+        
+        <Route path="/profile" element={
+          <>
+            <DriverNavbar />
+            <DriverProfile />
+          </>
+        } />
+        
+        {/* Default redirect to driver dashboard for easy testing */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         
         {/* 404 fallback */}
-        <Route path="*" element={<Navigate to="/place-order" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
       <Toaster />
     </>
