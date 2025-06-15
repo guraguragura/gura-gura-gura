@@ -1,11 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Package, User, MapPin, Clock, DollarSign } from 'lucide-react';
+import { Package, User, MapPin, DollarSign } from 'lucide-react';
 
 interface AdminOrder {
   id: string;
@@ -23,11 +22,6 @@ const OrderManagement = () => {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-
-  // Helper function to generate unique IDs
-  const generateCustomerId = () => 'cus_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-  const generateAddressId = () => 'addr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-  const generateOrderId = () => 'ord_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
 
   const fetchOrders = async () => {
     try {
@@ -83,104 +77,6 @@ const OrderManagement = () => {
     }
   };
 
-  const createTestOrder = async () => {
-    const testOrders = [
-      {
-        customerName: 'Alice Johnson',
-        phone: '+250788111111',
-        address: 'KN 5 Rd, Gasabo, Kigali',
-        items: 'Electronics package',
-        amount: 15000
-      },
-      {
-        customerName: 'Bob Wilson',
-        phone: '+250788222222',
-        address: 'KG 15 Ave, Nyarugenge, Kigali',
-        items: 'Food delivery',
-        amount: 8500
-      },
-      {
-        customerName: 'Carol Smith',
-        phone: '+250788333333',
-        address: 'KK 12 St, Kicukiro, Kigali',
-        items: 'Medicine package',
-        amount: 12000
-      }
-    ];
-
-    const randomOrder = testOrders[Math.floor(Math.random() * testOrders.length)];
-    
-    try {
-      // Generate unique IDs
-      const customerId = generateCustomerId();
-      const addressId = generateAddressId();
-      const orderId = generateOrderId();
-
-      // Create customer
-      const { error: customerError } = await supabase
-        .from('customer')
-        .insert({
-          id: customerId,
-          first_name: randomOrder.customerName.split(' ')[0],
-          last_name: randomOrder.customerName.split(' ')[1] || '',
-          phone: randomOrder.phone,
-          has_account: false
-        });
-
-      if (customerError) throw customerError;
-
-      // Create address
-      const { error: addressError } = await supabase
-        .from('order_address')
-        .insert({
-          id: addressId,
-          first_name: randomOrder.customerName.split(' ')[0],
-          last_name: randomOrder.customerName.split(' ')[1] || '',
-          phone: randomOrder.phone,
-          address_1: randomOrder.address,
-          customer_id: customerId
-        });
-
-      if (addressError) throw addressError;
-
-      // Create order
-      const { error: orderError } = await supabase
-        .from('order')
-        .insert({
-          id: orderId,
-          customer_id: customerId,
-          shipping_address_id: addressId,
-          currency_code: 'RWF',
-          unified_status: 'ready_for_pickup',
-          status: 'pending',
-          metadata: {
-            items_count: Math.floor(Math.random() * 3) + 1,
-            total_amount: randomOrder.amount,
-            estimated_delivery_time: '25-30 mins',
-            distance: `${(Math.random() * 5 + 1).toFixed(1)} km`,
-            items_description: randomOrder.items,
-            created_via: 'admin_test_order'
-          }
-        });
-
-      if (orderError) throw orderError;
-
-      toast({
-        title: "Test Order Created",
-        description: `Order ${orderId.slice(-8)} is now available for drivers`,
-      });
-
-      fetchOrders();
-    } catch (error) {
-      console.error('Error creating test order:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create test order",
-        variant: "destructive"
-      });
-    }
-  };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ready_for_pickup':
@@ -208,14 +104,9 @@ const OrderManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Order Management</h2>
-          <p className="text-gray-600">Manage customer orders and track delivery status</p>
-        </div>
-        <Button onClick={createTestOrder} className="bg-[#84D1D3] hover:bg-[#6bb6b9]">
-          Create Test Order
-        </Button>
+      <div>
+        <h2 className="text-2xl font-bold">Order Management</h2>
+        <p className="text-gray-600">Manage customer orders and track delivery status</p>
       </div>
 
       <div className="grid gap-4">
@@ -223,7 +114,7 @@ const OrderManagement = () => {
           <Card>
             <CardContent className="p-6 text-center text-gray-500">
               <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>No orders found. Create a test order to see how it appears on the driver dashboard.</p>
+              <p>No orders found.</p>
             </CardContent>
           </Card>
         ) : (
