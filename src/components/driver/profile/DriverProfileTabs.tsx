@@ -9,14 +9,12 @@ import RatingsTab from './RatingsTab';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDriverProfile } from '@/hooks/useDriverProfile';
 import { useDriverRatings } from '@/hooks/useDriverRatings';
-import { useDriverEarnings } from '@/hooks/useDriverEarnings';
 
 const DriverProfileTabs = () => {
   const location = useLocation();
   const { signOut } = useAuth();
   const { driverProfile, updateDriverProfile, refreshStatistics, updating } = useDriverProfile();
   const { stats: ratingStats, ratings, loading: ratingsLoading } = useDriverRatings(driverProfile?.id);
-  const { formattedEarnings } = useDriverEarnings(driverProfile?.id);
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditingVehicle, setIsEditingVehicle] = useState(false);
 
@@ -71,7 +69,6 @@ const DriverProfileTabs = () => {
         <StatsTab
           driverProfile={driverProfile}
           ratingStats={ratingStats}
-          formattedEarnings={formattedEarnings}
           onRefreshStatistics={refreshStatistics}
         />
       </TabsContent>

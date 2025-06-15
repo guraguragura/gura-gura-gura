@@ -3,30 +3,20 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star, RefreshCw } from 'lucide-react';
-import { useCurrency } from '@/hooks/useCurrency';
 import type { DriverProfile } from '@/hooks/useDriverProfile';
 import type { RatingStats } from '@/hooks/useDriverRatings';
-import type { PeriodEarnings } from '@/hooks/useDriverEarnings';
 
 interface StatsTabProps {
   driverProfile: DriverProfile;
   ratingStats: RatingStats;
-  formattedEarnings: {
-    today: string;
-    week: string;
-    month: string;
-  };
   onRefreshStatistics: () => void;
 }
 
 const StatsTab = ({ 
   driverProfile, 
   ratingStats, 
-  formattedEarnings, 
   onRefreshStatistics 
 }: StatsTabProps) => {
-  const { formatPrice } = useCurrency();
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Card>
@@ -70,24 +60,29 @@ const StatsTab = ({
 
       <Card>
         <CardHeader>
-          <CardTitle>Earnings Summary</CardTitle>
+          <CardTitle>Performance Summary</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex justify-between">
-            <span>Total Earnings:</span>
-            <span className="font-semibold">{formatPrice(driverProfile.total_earnings || 0)}</span>
+            <span>Total Ratings:</span>
+            <span className="font-semibold">{ratingStats.total_ratings || 0}</span>
           </div>
           <div className="flex justify-between">
-            <span>This Month:</span>
-            <span className="font-semibold">{formattedEarnings.month}</span>
+            <span>Account Status:</span>
+            <span className="font-semibold text-green-600">
+              {driverProfile.is_active ? 'Active' : 'Inactive'}
+            </span>
           </div>
           <div className="flex justify-between">
-            <span>This Week:</span>
-            <span className="font-semibold">{formattedEarnings.week}</span>
+            <span>Availability:</span>
+            <span className="font-semibold">
+              {driverProfile.is_available ? 'Available' : 'Not Available'}
+            </span>
           </div>
-          <div className="flex justify-between">
-            <span>Today:</span>
-            <span className="font-semibold">{formattedEarnings.today}</span>
+          <div className="text-center pt-4">
+            <p className="text-sm text-gray-600">
+              Payments are processed monthly through payroll
+            </p>
           </div>
         </CardContent>
       </Card>
